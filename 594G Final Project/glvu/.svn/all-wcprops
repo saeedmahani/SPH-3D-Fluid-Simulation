@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/reduced/!svn/ver/4/src/glvu
+END
+glvuVec3fv.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/reduced/!svn/ver/4/src/glvu/glvuVec3fv.h
+END
+glvu.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/reduced/!svn/ver/4/src/glvu/glvu.h
+END
+snapshot.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/reduced/!svn/ver/4/src/glvu/snapshot.h
+END
+trackball.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/reduced/!svn/ver/4/src/glvu/trackball.h
+END
+glvuMat16fv.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/reduced/!svn/ver/4/src/glvu/glvuMat16fv.h
+END
+glvuVec3f.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/reduced/!svn/ver/4/src/glvu/glvuVec3f.h
+END
+text.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/reduced/!svn/ver/4/src/glvu/text.h
+END
+camera.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/reduced/!svn/ver/4/src/glvu/camera.h
+END
+glvu.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/reduced/!svn/ver/4/src/glvu/glvu.cpp
+END

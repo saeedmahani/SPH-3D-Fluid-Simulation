@@ -7,8 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		30701D2814F85942006A9FC1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D2714F85942006A9FC1 /* main.cpp */; };
 		30701D2A14F85942006A9FC1 /* _94G_Final_Project.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 30701D2914F85942006A9FC1 /* _94G_Final_Project.1 */; };
+		30701D3914F85977006A9FC1 /* HW1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D3014F85977006A9FC1 /* HW1.cpp */; };
+		30701D3A14F85977006A9FC1 /* PARTICLE_SYSTEM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D3114F85977006A9FC1 /* PARTICLE_SYSTEM.cpp */; };
+		30701D3B14F85977006A9FC1 /* PARTICLE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D3314F85977006A9FC1 /* PARTICLE.cpp */; };
+		30701D3C14F85977006A9FC1 /* WALL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D3714F85977006A9FC1 /* WALL.cpp */; };
+		30701D3E14F85C58006A9FC1 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30701D3D14F85C58006A9FC1 /* GLUT.framework */; };
+		30701D4014F85C5D006A9FC1 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30701D3F14F85C5D006A9FC1 /* OpenGL.framework */; };
+		30701D4A14F8BA57006A9FC1 /* FIELD_2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D4914F8BA57006A9FC1 /* FIELD_2D.cpp */; };
+		30701D5214F8C1C9006A9FC1 /* FIELD_3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30701D5114F8C1C9006A9FC1 /* FIELD_3D.cpp */; };
+		30E4028015092C0800480976 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E4027F15092C0800480976 /* Accelerate.framework */; };
+		30E4028215092C0D00480976 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E4028115092C0D00480976 /* Cocoa.framework */; };
+		30E4028415092D1C00480976 /* glvu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E4028315092D1C00480976 /* glvu.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,8 +36,26 @@
 
 /* Begin PBXFileReference section */
 		30701D2314F85942006A9FC1 /* 594G Final Project */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "594G Final Project"; sourceTree = BUILT_PRODUCTS_DIR; };
-		30701D2714F85942006A9FC1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		30701D2914F85942006A9FC1 /* _94G_Final_Project.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = _94G_Final_Project.1; sourceTree = "<group>"; };
+		30701D3014F85977006A9FC1 /* HW1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HW1.cpp; sourceTree = "<group>"; };
+		30701D3114F85977006A9FC1 /* PARTICLE_SYSTEM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PARTICLE_SYSTEM.cpp; sourceTree = "<group>"; };
+		30701D3214F85977006A9FC1 /* PARTICLE_SYSTEM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PARTICLE_SYSTEM.h; sourceTree = "<group>"; };
+		30701D3314F85977006A9FC1 /* PARTICLE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PARTICLE.cpp; sourceTree = "<group>"; };
+		30701D3414F85977006A9FC1 /* PARTICLE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PARTICLE.h; sourceTree = "<group>"; };
+		30701D3514F85977006A9FC1 /* SPRING.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRING.h; sourceTree = "<group>"; };
+		30701D3614F85977006A9FC1 /* VEC3F.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VEC3F.h; sourceTree = "<group>"; };
+		30701D3714F85977006A9FC1 /* WALL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WALL.cpp; sourceTree = "<group>"; };
+		30701D3814F85977006A9FC1 /* WALL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WALL.h; sourceTree = "<group>"; };
+		30701D3D14F85C58006A9FC1 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		30701D3F14F85C5D006A9FC1 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		30701D4914F8BA57006A9FC1 /* FIELD_2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FIELD_2D.cpp; sourceTree = "<group>"; };
+		30701D4B14F8BA5D006A9FC1 /* FIELD_2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FIELD_2D.h; sourceTree = "<group>"; };
+		30701D5014F8BD89006A9FC1 /* FIELD_3D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FIELD_3D.h; sourceTree = "<group>"; };
+		30701D5114F8C1C9006A9FC1 /* FIELD_3D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FIELD_3D.cpp; sourceTree = "<group>"; };
+		30E4027D1509283100480976 /* glvu */ = {isa = PBXFileReference; lastKnownFileType = folder; path = glvu; sourceTree = "<group>"; };
+		30E4027F15092C0800480976 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		30E4028115092C0D00480976 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		30E4028315092D1C00480976 /* glvu.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = glvu.cpp; path = "594G Final Project/glvu/glvu.cpp"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,6 +63,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30E4028215092C0D00480976 /* Cocoa.framework in Frameworks */,
+				30E4028015092C0800480976 /* Accelerate.framework in Frameworks */,
+				30701D4014F85C5D006A9FC1 /* OpenGL.framework in Frameworks */,
+				30701D3E14F85C58006A9FC1 /* GLUT.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,6 +76,11 @@
 		30701D1814F85942006A9FC1 = {
 			isa = PBXGroup;
 			children = (
+				30E4028315092D1C00480976 /* glvu.cpp */,
+				30E4028115092C0D00480976 /* Cocoa.framework */,
+				30E4027F15092C0800480976 /* Accelerate.framework */,
+				30701D3F14F85C5D006A9FC1 /* OpenGL.framework */,
+				30701D3D14F85C58006A9FC1 /* GLUT.framework */,
 				30701D2614F85942006A9FC1 /* 594G Final Project */,
 				30701D2414F85942006A9FC1 /* Products */,
 			);
@@ -60,7 +97,20 @@
 		30701D2614F85942006A9FC1 /* 594G Final Project */ = {
 			isa = PBXGroup;
 			children = (
-				30701D2714F85942006A9FC1 /* main.cpp */,
+				30E4027D1509283100480976 /* glvu */,
+				30701D5014F8BD89006A9FC1 /* FIELD_3D.h */,
+				30701D5114F8C1C9006A9FC1 /* FIELD_3D.cpp */,
+				30701D4B14F8BA5D006A9FC1 /* FIELD_2D.h */,
+				30701D4914F8BA57006A9FC1 /* FIELD_2D.cpp */,
+				30701D3014F85977006A9FC1 /* HW1.cpp */,
+				30701D3114F85977006A9FC1 /* PARTICLE_SYSTEM.cpp */,
+				30701D3214F85977006A9FC1 /* PARTICLE_SYSTEM.h */,
+				30701D3314F85977006A9FC1 /* PARTICLE.cpp */,
+				30701D3414F85977006A9FC1 /* PARTICLE.h */,
+				30701D3514F85977006A9FC1 /* SPRING.h */,
+				30701D3614F85977006A9FC1 /* VEC3F.h */,
+				30701D3714F85977006A9FC1 /* WALL.cpp */,
+				30701D3814F85977006A9FC1 /* WALL.h */,
 				30701D2914F85942006A9FC1 /* _94G_Final_Project.1 */,
 			);
 			path = "594G Final Project";
@@ -116,7 +166,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				30701D2814F85942006A9FC1 /* main.cpp in Sources */,
+				30E4028415092D1C00480976 /* glvu.cpp in Sources */,
+				30701D3914F85977006A9FC1 /* HW1.cpp in Sources */,
+				30701D3A14F85977006A9FC1 /* PARTICLE_SYSTEM.cpp in Sources */,
+				30701D3B14F85977006A9FC1 /* PARTICLE.cpp in Sources */,
+				30701D3C14F85977006A9FC1 /* WALL.cpp in Sources */,
+				30701D4A14F8BA57006A9FC1 /* FIELD_2D.cpp in Sources */,
+				30701D5214F8C1C9006A9FC1 /* FIELD_3D.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +227,11 @@
 		30701D2E14F85942006A9FC1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					"./glvu/**",
+					"./**",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -178,6 +239,11 @@
 		30701D2F14F85942006A9FC1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					"./glvu/**",
+					"./**",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -201,6 +267,7 @@
 				30701D2F14F85942006A9FC1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
