@@ -3,7 +3,9 @@
 VEC3F red(1,0,0);
 VEC3F blue(0,0,1); 
 
-#define PARTICLE_DRAW_RADIUS 0.01
+int pCount = 0;
+
+#define PARTICLE_DRAW_RADIUS 0.006
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -17,6 +19,7 @@ PARTICLE::PARTICLE()
 PARTICLE::PARTICLE(const VEC3F& position) :
   _position(position)
 {
+  _id = pCount++;
   //_velocity[0] = 1.0;
   //std::cout << "particle constructor with vars\n";
 }
@@ -33,7 +36,7 @@ void PARTICLE::draw()
   
   glPushMatrix();
     glTranslatef(_position[0], _position[1], _position[2]);
-    glutSolidSphere(PARTICLE_DRAW_RADIUS, 10, 10);
+    glutSolidSphere(PARTICLE_DRAW_RADIUS, 4, 4);
   glPopMatrix();
 }
 

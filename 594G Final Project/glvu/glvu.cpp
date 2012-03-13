@@ -263,6 +263,7 @@ void GLVU::Reshape(int WW, int WH)
  */
 void GLVU::PrintVisualInfo()
 {
+  return;
   GLint i;
   GLboolean j;
   printf("GRAPHICS VISUAL INFO (# bits of each):\n");

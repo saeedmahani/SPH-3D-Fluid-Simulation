@@ -35,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		30232143150EAC9500CEB2E8 /* HW1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HW1.h; sourceTree = "<group>"; };
 		30701D2314F85942006A9FC1 /* 594G Final Project */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "594G Final Project"; sourceTree = BUILT_PRODUCTS_DIR; };
 		30701D2914F85942006A9FC1 /* _94G_Final_Project.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = _94G_Final_Project.1; sourceTree = "<group>"; };
 		30701D3014F85977006A9FC1 /* HW1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HW1.cpp; sourceTree = "<group>"; };
@@ -112,6 +113,7 @@
 				30701D3714F85977006A9FC1 /* WALL.cpp */,
 				30701D3814F85977006A9FC1 /* WALL.h */,
 				30701D2914F85942006A9FC1 /* _94G_Final_Project.1 */,
+				30232143150EAC9500CEB2E8 /* HW1.h */,
 			);
 			path = "594G Final Project";
 			sourceTree = "<group>";

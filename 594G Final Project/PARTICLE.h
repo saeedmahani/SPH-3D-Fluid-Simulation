@@ -15,8 +15,15 @@
 
 using namespace std;
 
+
+
 class PARTICLE {
+  
+  
+  
 public:
+  
+  //static unsigned int count;
   PARTICLE();
   PARTICLE(const VEC3F& position);
 
@@ -39,6 +46,7 @@ public:
   float& density()  { return _density; };
   float& pressure() { return _pressure; };
   bool& flag() { return _flag; };
+  int& id() { return _id; };
   
 private:  
   VEC3F _position;
@@ -48,6 +56,9 @@ private:
   float _density;
   float _pressure;
   bool _flag;
+  int _id;
 };
+
+//unsigned int PARTICLE::count = 0;
 
 #endif

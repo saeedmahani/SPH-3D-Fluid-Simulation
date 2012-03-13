@@ -26,19 +26,23 @@ public:
     assert(y < _yRes);
     assert(z >= 0);
     assert(z < _zRes); // i*length*width + j*width + k
-    return _data[x*_xRes*_yRes + y*_xRes + z];
+    //return _data[x*_xRes*_yRes + y*_xRes + z];
+    return _data[x + y*_xRes + z*_xRes*_yRes];
   }
   
   // accessors
   int xRes() const { return _xRes; };
   int yRes() const { return _yRes; };
   int zRes() const { return _zRes; };
+  int cellCount() const { return _cellCount; };
+  particleVector* data() const { return _data; };
   
 private:
   
   int _xRes;
   int _yRes;
   int _zRes;
+  int _cellCount;
   
   particleVector* _data;
   

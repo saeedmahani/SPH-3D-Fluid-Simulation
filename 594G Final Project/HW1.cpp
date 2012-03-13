@@ -22,13 +22,15 @@
 #include "PARTICLE.h"
 #include "PARTICLE_SYSTEM.h"
 #include <vector>
+#include "HW1.h"
+
 
 // GUI interaction stuff
 GLVU glvu;
 
 PARTICLE_SYSTEM particleSystem;
 
-float dt = 1.0 / 4000.0;
+float dt = 1.0 / 1000.0;
 bool animate = false;
 
 ///////////////////////////////////////////////////////////////////////
@@ -92,6 +94,7 @@ void displayCallback()
 ///////////////////////////////////////////////////////////////////////////////
 void reshapeCallback(int width, int height)
 {
+  cout << "reshape" << endl;
   // set the viewport resolution (w x h)
   glViewport(0, 0, (GLsizei) width, (GLsizei) height);
 
@@ -126,6 +129,26 @@ void keyboardCallback(unsigned char key, int x, int y)
     case 'a':
       animate = !animate;
       break;
+    
+    case ' ':
+#ifdef BRUTE
+      particleSystem.stepVerletBrute(dt);
+#else
+      particleSystem.stepVerlet(dt);
+#endif
+      glutPostRedisplay();
+      break;
+      
+    case 't':
+      for (int i = 0; i < 10; i++) {
+#ifdef BRUTE
+        particleSystem.stepVerletBrute(dt);
+#else
+        particleSystem.stepVerlet(dt);
+#endif
+        glutPostRedisplay();
+      }
+      break;
 
   }
   glvu.Keyboard(key, x, y);
@@ -147,6 +170,7 @@ void glutMouseClick(int button, int state, int x, int y)
 void glutMouseMotion(int x, int y)
 {
   glvu.Motion(x,y);
+  //glutPostRedisplay();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -159,7 +183,11 @@ void idleCallback()
   //particleSystem.stepEuler(dt);
   //particleSystem.stepMidpoint(dt);
   //particleSystem.stepRK4(dt);
+#ifdef BRUTE
+  particleSystem.stepVerletBrute(dt);
+#else
   particleSystem.stepVerlet(dt);
+#endif
 
   glutPostRedisplay();
 }

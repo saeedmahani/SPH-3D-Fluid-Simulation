@@ -24,7 +24,7 @@ void WALL::draw()
     // apply a rotation
     float angle1 = asin(_normal[0]) / (2 * M_PI) * 360.0;
   float angle2 = asin(_normal[1]) / (2 * M_PI) * 360.0;
-  float angle3 = asin(_normal[2]) / (2 * M_PI) * 360.0;
+  //float angle3 = asin(_normal[2]) / (2 * M_PI) * 360.0;
 
   
     glRotatef(-angle1, 0, 1, 0);

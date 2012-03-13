@@ -4,78 +4,122 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 ///////////////////////////////////////////////////////////////////////////////
-PARTICLE_SYSTEM::PARTICLE_SYSTEM() :
-  grid(10,10,10)
+PARTICLE_SYSTEM::PARTICLE_SYSTEM() : _particleCount(0)
 {
-  f_gravity = VEC3F(0, -9.8, 0);
+  int gridSize = (int)ceil(BOX_SIZE/h);
+  grid = new FIELD_3D(gridSize, gridSize, gridSize);
+
+  vector<PARTICLE>& firstGridCell = (*grid)(0,0,0);
+  firstGridCell.reserve(200);
   
   
-  //std::cout << grid.size() << "\n";
-  //gridKey key = std::tr1::make_tuple(2,3,4);
-  //vector<PARTICLE> *hi = &grid[key];
-  //if (gridKey.find("
-   
-  /* // 3d fluid box in middle
-  for (int x = -3; x < 4; x++) {
-    for (int y = 9; y < 12; y++) {
-      for (int z = -3; z < 4; z++) {
-        _particles.push_back(PARTICLE(VEC3F(x*0.02,y*0.02,z*0.02)));
-      }
-      
-    }
-  }
-   
-   */
+#ifdef BRUTE
+  cout << "using BRUTE neighbor method" << endl;
+#else
+  cout << "using GRID neighbor method" << endl;
+#endif
   
-  /*
-  _particles.push_back(PARTICLE(VEC3F(0, 0, 0)));
-  _particles.push_back(PARTICLE(VEC3F(0, 0.02, 0)));
-  _particles.push_back(PARTICLE(VEC3F(0, 0.04, 0)));
-*/
 
   bool offset = false;
   
-  for (float y = 0; y < BOX_SIZE/2.0; y+= 0.02) {
-    for (float x = BOX_SIZE/4.0; x < BOX_SIZE/2.0; x += 0.02) {
-      for (float z = -BOX_SIZE/2.0; z < BOX_SIZE/2.0; z+= 0.02) {
-        _particles.push_back(PARTICLE(VEC3F((offset ? -0.01 : 0) + x, y,z)));
+  for (float y = 0; y < BOX_SIZE/2.0 - 0.01; y+= h/2.0) {
+    for (float x = BOX_SIZE/4.0; x < BOX_SIZE/2.0 - 0.01; x += h/2.0) {
+      for (float z = -BOX_SIZE/2.0; z < BOX_SIZE/2.0 - 0.01; z+= h/2.0) {
+#ifdef BRUTE
+         _particles.push_back(PARTICLE(VEC3F((offset ? -h/2.0 : 0) + x, y,z)));
+#else
+        firstGridCell.push_back(PARTICLE(VEC3F((offset ? -h/2.0 : 0) + x, y,z)));
+#endif
+        _particleCount++;
+        //cout << firstGridCell.size() << endl;
+         
       }
     }
     offset = !offset;
   }
-   
   
-  printf("simulating %d particles\n", (int)_particles.size());
+#ifndef BRUTE
+  updateGrid(); // to properly position all the particles initially
+#endif
+   
+  printf("simulating %d particles\n", _particleCount);
   
   _walls.push_back(WALL(VEC3F(0,0,1), VEC3F(0,0,-BOX_SIZE/2.0)));
   _walls.push_back(WALL(VEC3F(1,0,0), VEC3F(-BOX_SIZE/2.0,0,0)));
   _walls.push_back(WALL(VEC3F(-1,0,0), VEC3F(BOX_SIZE/2.0,0,0)));
   _walls.push_back(WALL(VEC3F(0,1,0), VEC3F(0,-BOX_SIZE/2.0,0)));
   _walls.push_back(WALL(VEC3F(0,0,-1), VEC3F(0,0,BOX_SIZE/2.0)));
-  //_walls.push_back(WALL(VEC3F(0,-1,0), VEC3F(0,BOX_SIZE/2.0,0)));
+  //_walls.push_back(WALL(VEC3F(0,-1,0), VEC3F(0,BOX_SIZE/2.0,0)));  // top wall
 
   
-  /*
+}
+
+
+PARTICLE_SYSTEM::~PARTICLE_SYSTEM()
+{
+  if (grid) delete grid;
+}
+
+// to update the grid cells particles are located in
+// should be called right after particle positions are updated
+void PARTICLE_SYSTEM::updateGrid() {
   
-  std::cout << grid(3,4,5).size() << "\n";
+  //static float invGridSpacing = 1.0/h;
   
-  PARTICLE hi = PARTICLE(VEC3F(33,44,52));
-  grid(3,4,5).push_back(hi);
-  _particles.push_back(hi);
-  
-  PARTICLE hi1 = PARTICLE(VEC3F(34,44,52));
-  grid(3,4,5).push_back(hi1);
-  _particles.push_back(hi1);
-  
-  std::cout << grid(3,4,5).size() << "\n";
-  
-  
-  std::cout << grid.size() << "\n";
-  //calculateAcceleration();
-   
-   
-   
-   */
+  for (unsigned int x = 0; x < (*grid).xRes(); x++) {
+    for (unsigned int y = 0; y < (*grid).yRes(); y++) {
+      for (unsigned int z = 0; z < (*grid).zRes(); z++) {
+        
+        vector<PARTICLE>& particles = (*grid)(x,y,z);
+        
+        //cout << particles.size() << "p's in this grid" << endl;
+                
+        for (int p = 0; p < particles.size(); p++) {
+          
+          PARTICLE& particle = particles[p];
+          
+          int newGridCellX = (int)floor((particle.position().x+BOX_SIZE/2.0)/h); 
+          int newGridCellY = (int)floor((particle.position().y+BOX_SIZE/2.0)/h);
+          int newGridCellZ = (int)floor((particle.position().z+BOX_SIZE/2.0)/h);
+          
+          //cout << "particle position: " << particle.position() << endl;
+          //cout << "particle cell pos: " << newGridCellX << " " << newGridCellY << " " << newGridCellZ << endl;
+        
+          if (newGridCellX < 0)
+            newGridCellX = 0;
+          else if (newGridCellX >= (*grid).xRes())
+            newGridCellX = (*grid).xRes() - 1;
+          if (newGridCellY < 0)
+            newGridCellY = 0;
+          else if (newGridCellY >= (*grid).yRes())
+            newGridCellY = (*grid).yRes() - 1;
+          if (newGridCellZ < 0)
+            newGridCellZ = 0;
+          else if (newGridCellZ >= (*grid).zRes())
+            newGridCellZ = (*grid).zRes() - 1;
+          
+          //cout << "particle cell pos: " << newGridCellX << " " << newGridCellY << " " << newGridCellZ << endl;
+
+          
+          // check if particle has moved
+          
+          if (x != newGridCellX || y != newGridCellY || z != newGridCellZ) {
+            
+            // move the particle to the new grid cell
+            
+            (*grid)(newGridCellX, newGridCellY, newGridCellZ).push_back(particle);
+            
+            // remove it from it's previous grid cell
+            
+            particles[p] = particles.back();
+            particles.pop_back();
+            p--; // important! make sure to redo this index, since a new particle will (probably) be there
+          }
+          
+        }
+      }
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,11 +137,39 @@ void PARTICLE_SYSTEM::draw()
   glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
   glMaterialfv(GL_FRONT, GL_SPECULAR, white);
   glMaterialfv(GL_FRONT, GL_SHININESS, &shininess);
+  
+  //for (unsigned int x = 0; x < _particles.size(); x++)
+  //  _particles[x].draw();
+  
+#ifdef BRUTE
+  
   for (unsigned int x = 0; x < _particles.size(); x++)
     _particles[x].draw();
+    
+#else
+  
+  for (int gridCellIndex = 0; gridCellIndex < (*grid).cellCount(); gridCellIndex++) {
+    
+    vector<PARTICLE>& particles = (*grid).data()[gridCellIndex];
+    
+    for (int p = 0; p < particles.size(); p++) {
+      
+      PARTICLE& particle = particles[p];
+      
+      particle.draw();
+      
+    }
+  }
+
+#endif
 
   
   glutWireCube(BOX_SIZE);
+  
+//  glPushMatrix();
+//  glTranslatef(BOX_SIZE/2.0, 0, 0);
+//  glutWireSphere(0.01, 10, 10);
+//  glPopMatrix();
   
   /*
   
@@ -129,295 +201,282 @@ void PARTICLE_SYSTEM::draw()
 ///////////////////////////////////////////////////////////////////////////////
 void PARTICLE_SYSTEM::stepVerlet(float dt)
 {
-  unsigned int numParticles = _particles.size();
-  
-  //VEC3F systemAcceleration[numParticles];
   
   calculateAcceleration();
   
-  for (unsigned int i = 0; i < numParticles; i++) {
+  for (unsigned int gridCellIndex = 0; gridCellIndex < (*grid).cellCount(); gridCellIndex++) {
     
-    PARTICLE& particle = _particles[i];
+    vector<PARTICLE>& particles = (*grid).data()[gridCellIndex];
     
-    VEC3F newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
-    VEC3F newVelocity = (newPosition - particle.position()) / dt;
-    
-    particle.position() = newPosition;
-    particle.velocity() = newVelocity;
-    
-    // collision detection
-    
-    // moved to calculateAcceleration()
-    
-    
-    
-     
+    for (unsigned int p = 0; p < particles.size(); p++) {
+      
+      PARTICLE& particle = particles[p];
+      
+      VEC3F newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
+      VEC3F newVelocity = (newPosition - particle.position()) / dt;
+      
+      particle.position() = newPosition;
+      particle.velocity() = newVelocity;
+    }
   }
 }
 
+float totalDensity = 0.0;
+VEC3F totalPressure;
+int neighborsVisited = 0;
 
 void PARTICLE_SYSTEM::calculateAcceleration() {
-  
-  unsigned int numParticles = _particles.size();
-  
+    
   // to conaint a vector of neighbors belonging to each particle (same index as _particles)
-  vector<PARTICLE> **neighborArray = new vector<PARTICLE>*[numParticles]; // make this vector instead?
+  //vector<PARTICLE> **neighborArray = new vector<PARTICLE>*[_particleCount]; // make this vector instead?
   
   
   ///////////////////
   // STEP 1: UPDATE DENSITY & PRESSURE OF EACH PARTICLE
   
-  for (int i = 0; i < numParticles; i++) {
-    
-    // grab ith particle reference
-    
-    PARTICLE& particle = _particles[i];
-    
-    //vector<PARTICLE> totalNeighborParticles;
-    
-    
-    /*
-    
-    // get grid position from position (hash it basically)
-    
-    VEC3F gridPosition = particle.position() / h;
-    
-    // get the neighbors of this particle
-    
-    getNeighborParticles(totalNeighborParticles, (int)gridPosition.x, (int)gridPosition.y, (int)gridPosition.z);
-    
-    
-    */
-    
-    //totalNeighborParticles = _particles;
-     
-    //cout << neighborArray[i]->size() << "\n";
-    
-    neighborArray[i] = &_particles;
-    
-    // now iteratate through neighbors
-    
-    unsigned int numNeighborParticles = neighborArray[i]->size();
-    
-    float density = 0.0;
-    
-    for (int j = 0; j < numNeighborParticles; j++) {
-      
-      PARTICLE& neighborParticle = (*neighborArray[i])[j];
-      
-      // 1st get density
-      
-      // r squared is x^2 + y^2 + z^2
-      
-      VEC3F diffPosition = particle.position() - neighborParticle.position();
-      
-      density += PARTICLE_MASS * Wpoly6(diffPosition);
+  //cout << "gridCellCount: " << (*grid).cellCount() << endl;
+  //cout << "grid xRes: " << (*grid).xRes() << endl;
+  
+  for (int x = 0; x < (*grid).xRes(); x++) {
+    for (int y = 0; y < (*grid).yRes(); y++) {
+      for (int z = 0; z < (*grid).zRes(); z++) {
+        
+        vector<PARTICLE>& particles = (*grid)(x,y,z);
+                
+        for (int p = 0; p < particles.size(); p++) {
+          
+          PARTICLE& particle = particles[p];
+
+          particle.density() = 0.0;
+          
+          // now iteratate through neighbors
+          
+          for (int offsetX = -1; offsetX <= 1; offsetX++) {
+            if (x+offsetX < 0) continue;
+            if (x+offsetX >= (*grid).xRes()) break;
+            
+            for (int offsetY = -1; offsetY <= 1; offsetY++) {
+              if (y+offsetY < 0) continue;
+              if (y+offsetY >= (*grid).yRes()) break;
+              
+              for (int offsetZ = -1; offsetZ <= 1; offsetZ++) {
+                if (z+offsetZ < 0) continue;
+                if (z+offsetZ >= (*grid).zRes()) break;
+                
+                vector<PARTICLE>& neighborGridCellParticles = (*grid)(x+offsetX, y+offsetY, z+offsetZ);
+              
+                for (int i = 0; i < neighborGridCellParticles.size(); i++) {
+                  
+                  PARTICLE& neighborParticle = neighborGridCellParticles[i];
+                  
+                  VEC3F diffPosition = particle.position() - neighborParticle.position();
+                  
+                  float radiusSquared = diffPosition.dot(diffPosition);
+                  
+                  if (radiusSquared <= h*h)
+                    particle.density() += Wpoly6(radiusSquared);
+                  
+                }
+              }
+            }
+          }
+          
+          particle.density() *= PARTICLE_MASS;
+                        
+          // p = k(density - density_rest)
+          
+          particle.pressure() = PARTICLE_K * (particle.density() - PARTICLE_REST_DENSITY);
+          
+        }
+      }
     }
-    
-    particle.density() = density;
-    
-    // then from density get the pressure    p = k(density - density_rest)
-    
-    particle.pressure() = PARTICLE_K * (particle.density() - PARTICLE_REST_DENSITY);
-    
-    //cout << particle.pressure() << endl;
-    
   }
   
+  
+  //////////// testing total density
+  
+  for (int gridCellIndex = 0; gridCellIndex < (*grid).cellCount(); gridCellIndex++) {
+    
+    vector<PARTICLE>& particles = (*grid).data()[gridCellIndex];
+    
+    for (int p = 0; p < particles.size(); p++) {
+      
+      PARTICLE& particle = particles[p];
+      
+      totalDensity += particle.density();
+      
+    }
+  }
+  
+  
+  //////////
+  
+  
+  //cout << "total density (GRID): " << totalDensity << endl;
   
   ///////////////////
-  // STEP 2: COMPUTE FORCE VECTORS FOR ALL PARTICLES
+  // STEP 2: COMPUTE FORCES FOR ALL PARTICLES
   
-  for (int i = 0; i < numParticles; i++) {
-    
-    VEC3F f_pressure, f_viscosity, f_surface, n; // n is gradient of colorfield
-    float n_mag;
-    PARTICLE& particle = _particles[i];
-    vector<PARTICLE>& neighbors = *(neighborArray[i]);
+  for (int x = 0; x < (*grid).xRes(); x++) {
+    for (int y = 0; y < (*grid).yRes(); y++) {
+      for (int z = 0; z < (*grid).zRes(); z++) {
         
-    unsigned int numNeighborParticles = neighbors.size();
-    
-    //cout << "numNeighborParticles:" << numNeighborParticles << endl;
-    
-    //cout << _particles[0].density() << " " << _particles[1].density() << endl;
-    //cout << neighbors[0].density() << " " << neighbors[1].density() << endl;
-    //_particles[0].density() = 4.0;
-    //cout << _particles[0].density() << " " << _particles[1].density() << endl;
-    //cout << neighbors[0].density() << " " << neighbors[1].density() << endl;
-
-    for (int j = 0; j < numNeighborParticles; j++) {
-      
-      PARTICLE& neighbor = neighbors[j];
-      //cout << "neighbor position: " <<  neighbor.position() << "\n";
-      //cout << "particle position: " << particle.position() << "\n";
-      
-      VEC3F diffPosition = particle.position() - neighbor.position();
-      VEC3F diffPositionNormalized = diffPosition.normal();
-      
-      
-      //cout << "diff position: " << diffPosition << endl;
-      //cout << "particle pressure:" << particle.pressure() << " density:" << particle.density() << endl;
-      //cout << "neighbor pressure:" << neighbor.pressure() << " density:" << neighbor.density() << endl;
-
-      //cout << "particle pos: " << particle.position() << endl;
-      //cout << "neighbor pos: " << neighbor.position() << endl;
-      //cout << "diffPosition: " << diffPosition << endl;
-      
-      f_pressure -= PARTICLE_MASS * (particle.pressure() + neighbor.pressure()) / (2 * neighbor.density()) * Wspiky_1(diffPosition) * diffPositionNormalized;
-      
-      //cout << f_pressure << "\n";
-      
-      f_viscosity += PARTICLE_MASS * (neighbor.velocity() - particle.velocity()) / neighbor.density() * Wviscosity_2(diffPosition) * diffPositionNormalized;
-      
-      n += PARTICLE_MASS / neighbor.density() * Wpoly6_1(diffPosition) * diffPositionNormalized;
-      
-    }
-    
-    f_viscosity *= PARTICLE_MEW;
-    
-    // check if |n| > threshold...if so continue finding surface force
-    
-    n_mag = n.magnitude();
-    
-    //cout << "n_mag: " << n_mag << endl;
-    
-    //cout << n_mag << endl;
-    
-    if (n_mag > N_SURFACE_THRESHOLD) {  /// FALSE FLASE FALSE FALSE 
-      
-      VEC3F colorField_2; // laplacian of colorfield
-      
-      for (int j = 0; j < numNeighborParticles; j++) {
+        vector<PARTICLE>& particles = (*grid)(x,y,z);
         
-        PARTICLE& neighbor = neighbors[j];
-        
-        VEC3F diffPosition = particle.position() - neighbor.position();
-      
-        colorField_2 += PARTICLE_MASS / neighbor.density() * Wpoly6_2(diffPosition) * diffPosition.normal();
-        
-      }
-      
-      particle.flag() = true;
-      
-      f_surface = -PARTICLE_THETA * colorField_2 * (n / n_mag);
-      
-      //cout << "f_surface: " << f_surface << endl;
-      
-    }
-    else {
-      particle.flag() = false;
-    }
-    
-    // ADD IN SPH FORCES
-    
-    particle.acceleration() = (f_pressure + f_viscosity + f_surface) / particle.density();
-    
-    
-    // EXTERNAL FORCES HERE (USER INTERACTION, SWIRL)
-    
-    VEC3F f_collision;
-    
-    for (unsigned int i = 0; i < _walls.size(); i++) {
-      
-      WALL& wall = _walls[i];
-      
-      float d = (wall.point() - particle.position()).dot(wall.normal()) + 0.01; // particle radius
-      
-      if (d > 0.0) {
-        //particle.position() += d * wall.normal();
-        //particle.velocity() -= particle.velocity().dot(wall.normal()) * 1.94 * wall.normal();
-        
-        
-        
-        f_collision += WALL_K * wall.normal() * d;
-        f_collision += WALL_DAMPING * particle.velocity().dot(wall.normal()) * wall.normal();
+        for (int p = 0; p < particles.size(); p++) {
+          
+          PARTICLE& particle = particles[p];
+          
+          //cout << "particle id: " << particle.id() << endl;
+          
+          VEC3F f_pressure, 
+          f_viscosity, 
+          f_surface, 
+          f_gravity(0.0, particle.density() * -9.80665, 0.0),
+          n, 
+          colorFieldNormal,
+          colorFieldLaplacian;
+                    
+          // now iteratate through neighbors
+          
+          for (int offsetX = -1; offsetX <= 1; offsetX++) {
+            if (x+offsetX < 0) continue;
+            if (x+offsetX >= (*grid).xRes()) break;
+            
+            for (int offsetY = -1; offsetY <= 1; offsetY++) {
+              if (y+offsetY < 0) continue;
+              if (y+offsetY >= (*grid).yRes()) break;
+              
+              for (int offsetZ = -1; offsetZ <= 1; offsetZ++) {
+                if (z+offsetZ < 0) continue;
+                if (z+offsetZ >= (*grid).zRes()) break;
+                
+                vector<PARTICLE>& neighborGridCellParticles = (*grid)(x+offsetX, y+offsetY, z+offsetZ);
+                
+                for (int i = 0; i < neighborGridCellParticles.size(); i++) {
+                  
+                  PARTICLE& neighbor = neighborGridCellParticles[i];
+                  
+                  VEC3F diffPosition = particle.position() - neighbor.position();
+                  //VEC3F diffPositionNormalized = diffPosition.normal(); // need?
+                  float radiusSquared = diffPosition.dot(diffPosition);
+                  
+                  if (radiusSquared <= h*h) {
+                    
+                    
+                    
+                    if (radiusSquared > 0.0) {
+                      
+                      neighborsVisited++;
+                      //cout << neighborsVisited << endl;
+                      //cout << neighbor.id() << "," << endl;
+                      
+                      VEC3F gradient;
+                                            
+                      Wpoly6Gradient(diffPosition, radiusSquared, gradient);
+                                            
+                      f_pressure += (particle.pressure() + neighbor.pressure()) / (2.0 * neighbor.density()) * gradient;
+                      
+                      colorFieldNormal += gradient / neighbor.density();
+                    }
+                    
+                    f_viscosity += (neighbor.velocity() - particle.velocity()) * WviscosityLaplacian(radiusSquared) / neighbor.density();
+                    
+                    colorFieldLaplacian += Wpoly6Laplacian(radiusSquared) / neighbor.density();
+                  }
+                  
+                }
+              }
+            }
+          } // end of neighbor grid cell iteration
+          
+          f_pressure *= -PARTICLE_MASS;
+          
+          totalPressure += f_pressure;
+          
+          //cout << "pressure: " << f_pressure << endl;
+          
+          f_viscosity *= PARTICLE_MEW * PARTICLE_MASS;
+          
+          colorFieldNormal *= PARTICLE_MASS;
+          
+          colorFieldLaplacian *= PARTICLE_MASS;
+          
+          // ADD IN SPH FORCES
+          
+          particle.acceleration() = (f_pressure + f_viscosity + f_surface + f_gravity) / particle.density();
+          
+          //cout << particle.acceleration() << endl;
+          
+          // EXTERNAL FORCES HERE (USER INTERACTION, SWIRL)
+          
+          VEC3F f_collision; 
+          collisionForce(particle, f_collision);
+          
+          
+          
+          particle.acceleration() += (f_collision) / PARTICLE_MASS;
+        } // end of particle iteration
       }
     }
+  }
+  
+  //cout << "neighbors visited: " << neighborsVisited << endl;
+  //cout << "total pressure: " << totalPressure << endl;
+}
+
+
+void PARTICLE_SYSTEM::collisionForce(PARTICLE& particle, VEC3F& f_collision) {
     
+  for (unsigned int i = 0; i < _walls.size(); i++) {
     
+    WALL& wall = _walls[i];
     
-    particle.acceleration() += (f_gravity + f_collision) / PARTICLE_MASS;
-  }
-  
-  delete[] neighborArray;
-}
-
-void PARTICLE_SYSTEM::getNeighborParticles(vector<PARTICLE>& totalNeighborParticles, int x, int y, int z) {
-  
-  vector<PARTICLE>& neighborParticles = grid(x, y, z);
-  totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end());
-  
-  if (x > 0) {
-    vector<PARTICLE>& neighborParticles = grid(x - 1, y, z);
-    totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end()); 
-  }
-  
-  if (x < grid.xRes() - 1) {
-    vector<PARTICLE>& neighborParticles = grid(x + 1, y, z);
-    totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end()); 
-  }
-  
-  if (y > 0) {
-    vector<PARTICLE>& neighborParticles = grid(x, y - 1, z);
-    totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end()); 
-  }
-  
-  if (y < grid.yRes() - 1) {
-    vector<PARTICLE>& neighborParticles = grid(x, y + 1, z);
-    totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end()); 
-  }
-  
-  if (z > 0) {
-    vector<PARTICLE>& neighborParticles = grid(x, y, z - 1);
-    totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end()); 
-  }
-  
-  if (z < grid.zRes() - 1) {
-    vector<PARTICLE>& neighborParticles = grid(x, y, z + 1);
-    totalNeighborParticles.insert(totalNeighborParticles.end(), neighborParticles.begin(), neighborParticles.end()); 
-  }
-  
-}
-
-float PARTICLE_SYSTEM::Wpoly6(VEC3F& r) {  // checked
-  
-  float radiusSquared = r.dot(r);
-  
-  if (radiusSquared < 0 || radiusSquared > pow(h,2)) {  // IMPORTANT! since we are checking r^2, need to check against h^2
-    return 0.0;
-  }
-  else {
-    return 315.0/(64*pi*pow(h,9)) * pow( pow(h,2)-radiusSquared, 3);
-  }
-  
-}
-
-float PARTICLE_SYSTEM::Wpoly6_1(VEC3F& r) {  // checked
-  
-  float radius = r.magnitude();
-  
-  if (radius < 0 || radius > h) {
-    return 0.0;
-  }
-  else {
-    return 315.0/(64*pi*pow(h,9)) * -6.0*radius*pow(pow(h,2) - pow(radius,2), 2); // optimize here
+    float d = (wall.point() - particle.position()).dot(wall.normal()) + 0.01; // particle radius
+    
+    if (d > 0.0) {
+      //particle.position() += d * wall.normal();
+      //particle.velocity() -= particle.velocity().dot(wall.normal()) * 1.94 * wall.normal();
+      
+      
+      
+      f_collision += WALL_K * wall.normal() * d;
+      f_collision += WALL_DAMPING * particle.velocity().dot(wall.normal()) * wall.normal();
+    }
   }
 }
 
-float PARTICLE_SYSTEM::Wpoly6_2(VEC3F& r) { // checked
+
+float PARTICLE_SYSTEM::Wpoly6(float radiusSquared) {  // checked
+    
+  static float coefficient = 315.0/(64.0*M_PI*pow(h,9));
+  static float hSquared = h*h;
   
-  float radiusSquared = r.dot(r);
-  
-  if (radiusSquared < 0 || radiusSquared > pow(h,2)) {  // IMPORTANT! since we are checking r^2, need to check against h^2
-    return 0.0;
-  }
-  else {
-    return 315.0/(64*pi*pow(h,9)) * -6.0*(pow(h,2)-5.0*radiusSquared)*(pow(h,2)-radiusSquared) - 12.0*pow(pow(h,2)-radiusSquared, 2);
-  }
-  
+  return coefficient * pow(hSquared-radiusSquared, 3);
 }
 
-float PARTICLE_SYSTEM::Wspiky_1(VEC3F& r) {  // checked
+void PARTICLE_SYSTEM::Wpoly6Gradient(VEC3F& diffPosition, float radiusSquared, VEC3F& gradient) {  
+    
+  static float coefficient = -6.0*315.0/(64.0*M_PI*pow(h,9));
+  static float hSquared = h*h;
+  
+  float weight = coefficient * pow(hSquared-radiusSquared, 2);
+  
+  gradient = weight * diffPosition;
+}
+
+float PARTICLE_SYSTEM::Wpoly6Laplacian(float radiusSquared) {
+    
+  static float coefficient = 315.0/(64.0*M_PI*pow(h,9));
+  static float hSquared = h*h;
+  
+  float hSquaredMinusRadiusSquared = hSquared - radiusSquared;
+  
+  return coefficient * (-18.0*pow(hSquaredMinusRadiusSquared, 2) + 24.0*radiusSquared*hSquaredMinusRadiusSquared);
+}
+
+/*
+float PARTICLE_SYSTEM::WspikyGradient(VEC3F& r) {  // checked
   
   float radius = r.magnitude();
   
@@ -433,16 +492,228 @@ float PARTICLE_SYSTEM::Wspiky_1(VEC3F& r) {  // checked
   }
   
 }
+ */
 
-float PARTICLE_SYSTEM::Wviscosity_2(VEC3F& r) {  // checked
+float PARTICLE_SYSTEM::WviscosityLaplacian(float radiusSquared) {  // checked
   
-  float radius = r.magnitude();
+  static float coefficient = 45.0/(M_PI*pow(h,6));
   
-  if (radius < 0 || radius > h) {
-    return 0.0;
+  float radius = sqrt(radiusSquared);
+  
+  return coefficient * (h - radius);    
+}
+
+
+//std::cout << grid.size() << "\n";
+//gridKey key = std::tr1::make_tuple(2,3,4);
+//vector<PARTICLE> *hi = &grid[key];
+//if (gridKey.find("
+
+/* cal f_surface here
+ 
+ if (n_mag > N_SURFACE_THRESHOLD) {  
+ 
+ VEC3F colorFieldLaplacian; // laplacian of colorfield
+ 
+ for (int j = 0; j < numNeighborParticles; j++) {
+ 
+ PARTICLE& neighbor = neighbors[j];
+ 
+ VEC3F diffPosition = particle.position() - neighbor.position();
+ 
+ colorFieldLaplacian += PARTICLE_MASS / neighbor.density() * Wpoly6Laplacian(diffPosition) * diffPosition.normal();
+ 
+ }
+ 
+ particle.flag() = true;
+ 
+ f_surface = -PARTICLE_THETA * colorFieldLaplacian * (n / n_mag);
+ 
+ }
+ else {
+ particle.flag() = false;
+ }
+ */
+
+void PARTICLE_SYSTEM::calculateAccelerationBrute() {
+    
+  unsigned int numParticles = _particles.size();
+  
+  // to conaint a vector of neighbors belonging to each particle (same index as _particles)
+//  vector<PARTICLE> **neighborArray = new vector<PARTICLE>*[numParticles]; // make this vector instead?
+  
+  
+  ///////////////////
+  // STEP 1: UPDATE DENSITY & PRESSURE OF EACH PARTICLE
+  
+  for (int i = 0; i < _particleCount; i++) {
+    
+    // grab ith particle reference
+    
+    PARTICLE& particle = _particles[i];
+    
+    // now iteratate through neighbors
+    
+    particle.density() = 0.0;
+            
+    for (int j = 0; j < _particleCount; j++) {
+      
+      PARTICLE& neighborParticle = _particles[j];
+      
+      VEC3F diffPosition = particle.position() - neighborParticle.position();
+      
+      float radiusSquared = diffPosition.dot(diffPosition);
+      
+      if (radiusSquared <= h*h)
+        particle.density() += Wpoly6(radiusSquared);
+    }
+    
+    particle.density() *= PARTICLE_MASS;
+    
+    // p = k(density - density_rest)
+    
+    particle.pressure() = PARTICLE_K * (particle.density() - PARTICLE_REST_DENSITY);
+  
+    totalDensity += particle.density();
   }
-  else {
-    return 45/(pi*pow(h,6))*(h - radius);  // fixed to match the paper's laplacian of viscosity
+  
+  
+  //cout << "total density (BRUTE): " << totalDensity << endl;
+
+  
+  
+  ///////////////////
+  // STEP 2: COMPUTE FORCES FOR ALL PARTICLES
+  
+  for (int i = 0; i < numParticles; i++) {
+    
+    PARTICLE& particle = _particles[i];
+    
+    //cout << "particle id: " << particle.id() << endl;
+    
+    VEC3F f_pressure, 
+    f_viscosity, 
+    f_surface, 
+    f_gravity(0.0, particle.density() * -9.80665, 0.0),
+    n, 
+    colorFieldNormal,
+    colorFieldLaplacian; // n is gradient of colorfield
+    //float n_mag;
+    
+    for (int j = 0; j < _particleCount; j++) {
+      PARTICLE& neighbor = _particles[j];
+      
+      VEC3F diffPosition = particle.position() - neighbor.position();
+      VEC3F diffPositionNormalized = diffPosition.normal(); // need?
+      float radiusSquared = diffPosition.dot(diffPosition);
+      
+      if (radiusSquared <= h*h) {
+        
+                
+        if (radiusSquared > 0.0) {
+          
+          neighborsVisited++;
+          //cout << neighborsVisited << endl;
+          
+          //cout << neighbor.id() << endl;
+          
+          VEC3F gradient;
+                    
+          Wpoly6Gradient(diffPosition, radiusSquared, gradient);
+                    
+          f_pressure += (particle.pressure() + neighbor.pressure()) / (2.0 * neighbor.density()) * gradient;
+          
+          colorFieldNormal += gradient / neighbor.density();
+        }
+        
+        f_viscosity += (neighbor.velocity() - particle.velocity()) * WviscosityLaplacian(radiusSquared) / neighbor.density();
+        
+        colorFieldLaplacian += Wpoly6Laplacian(radiusSquared) / neighbor.density();
+      }
+      
+    }
+    
+    f_pressure *= -PARTICLE_MASS;
+    
+    totalPressure += f_pressure;
+    
+    f_viscosity *= PARTICLE_MEW * PARTICLE_MASS;
+    
+    colorFieldNormal *= PARTICLE_MASS;
+    
+    colorFieldLaplacian *= PARTICLE_MASS;
+    
+    /* cal f_surface here
+     
+     if (n_mag > N_SURFACE_THRESHOLD) {  
+     
+     VEC3F colorFieldLaplacian; // laplacian of colorfield
+     
+     for (int j = 0; j < numNeighborParticles; j++) {
+     
+     PARTICLE& neighbor = neighbors[j];
+     
+     VEC3F diffPosition = particle.position() - neighbor.position();
+     
+     colorFieldLaplacian += PARTICLE_MASS / neighbor.density() * Wpoly6Laplacian(diffPosition) * diffPosition.normal();
+     
+     }
+     
+     particle.flag() = true;
+     
+     f_surface = -PARTICLE_THETA * colorFieldLaplacian * (n / n_mag);
+     
+     }
+     else {
+     particle.flag() = false;
+     }
+     */
+    
+    // ADD IN SPH FORCES
+    
+    particle.acceleration() = (f_pressure + f_viscosity + f_surface + f_gravity) / particle.density();
+    
+    
+    // EXTERNAL FORCES HERE (USER INTERACTION, SWIRL)
+    
+    VEC3F f_collision;
+    
+    collisionForce(particle, f_collision);    
+  
+    
+    particle.acceleration() += (f_collision) / PARTICLE_MASS;
   }
   
+  //cout << "neighbors visited: " << neighborsVisited << endl;
+  //cout << "total pressure: " << totalPressure << endl;
+  
+  //delete[] neighborArray;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Verlet integration
+///////////////////////////////////////////////////////////////////////////////
+void PARTICLE_SYSTEM::stepVerletBrute(float dt)
+{
+  
+   unsigned int numParticles = _particles.size();
+   
+   calculateAccelerationBrute();
+   
+   for (unsigned int i = 0; i < numParticles; i++) {
+   
+   PARTICLE& particle = _particles[i];
+   
+   VEC3F newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
+   VEC3F newVelocity = (newPosition - particle.position()) / dt;
+   
+   particle.position() = newPosition;
+   particle.velocity() = newVelocity;
+   
+   // collision detection
+   
+   // moved to calculateAcceleration()
+   
+   }
+   
 }
