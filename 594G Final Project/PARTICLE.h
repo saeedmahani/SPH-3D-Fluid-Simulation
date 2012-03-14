@@ -26,6 +26,7 @@ public:
   //static unsigned int count;
   PARTICLE();
   PARTICLE(const VEC3F& position);
+  PARTICLE(const VEC3F& position, const VEC3F& velocity);
 
   // draw to OGL
   void draw();
@@ -47,6 +48,7 @@ public:
   float& pressure() { return _pressure; };
   bool& flag() { return _flag; };
   int& id() { return _id; };
+  VEC3F color;
   
 private:  
   VEC3F _position;
@@ -57,6 +59,7 @@ private:
   float _pressure;
   bool _flag;
   int _id;
+  
 };
 
 //unsigned int PARTICLE::count = 0;

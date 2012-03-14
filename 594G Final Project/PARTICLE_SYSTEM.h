@@ -12,19 +12,20 @@
 
 #include "HW1.h"
 
-#define h 0.045
+#define h 0.02 //0.045
 
 #define PARTICLE_K 20.0 // 461.5  // Nm/kg is gas constant of water vapor
 #define PARTICLE_REST_DENSITY 1000.0 // kg/m^3 is rest density of water particle
 #define PARTICLE_MASS 0.012 // kg
 #define PARTICLE_MEW 5.0 // 0.00089 // Ns/m^2 or Pa*s viscosity of water
-#define N_SURFACE_THRESHOLD 20.0
+#define N_SURFACE_THRESHOLD 1209102910291029 // 0.05
 #define PARTICLE_THETA 0.073 // N/m  coefficient of surface tension for water
 
-#define WALL_K 10000.0 // wall spring constant
+#define WALL_K 500.0 // wall spring constant
 #define WALL_DAMPING -0.9 // wall damping constant
 
-#define BOX_SIZE 0.3
+#define BOX_SIZE 0.4
+#define MAX_PARTICLES 1500
 
 using namespace std;
 
@@ -38,6 +39,10 @@ public:
   
   // draw to OGL
   void draw();
+  
+  void addParticle(const VEC3F& position);
+  
+  void addParticle(const VEC3F& position, const VEC3F& velocity);
   
   void stepVerlet(float dt);
   
@@ -61,6 +66,10 @@ public:
   
   float WviscosityLaplacian(float radiusSquared);
   
+  void toggleGridVisble();
+  
+  void generateFaucetParticleSet();
+  
   //typedef std::tr1::tuple<int,int,int> gridKey;  
   //std::map<gridKey, std::vector<PARTICLE> > grid;
   
@@ -74,6 +83,7 @@ private:
   vector<SPRING>   _springs;
 
   unsigned int _particleCount;
+  bool _isGridVisible;
 
   // add a spring between the two particles
   void addSpring(int left, int right);

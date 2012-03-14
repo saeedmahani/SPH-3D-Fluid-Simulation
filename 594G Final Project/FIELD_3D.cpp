@@ -12,6 +12,7 @@ FIELD_3D::FIELD_3D(int xRes, int yRes, int zRes) :
   for (int i = 0; i < _cellCount; i++)
     _data[i].reserve(1000);
   // clear();
+  cout << "grid is " << xRes << "x" << yRes << "x" << zRes << endl;
 }
 
 FIELD_3D::~FIELD_3D()

@@ -140,7 +140,7 @@ void keyboardCallback(unsigned char key, int x, int y)
       break;
       
     case 't':
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 200; i++) {
 #ifdef BRUTE
         particleSystem.stepVerletBrute(dt);
 #else
@@ -148,6 +148,12 @@ void keyboardCallback(unsigned char key, int x, int y)
 #endif
         glutPostRedisplay();
       }
+      break;
+      
+    case 'g':
+#ifndef BRUTE
+      particleSystem.toggleGridVisble();
+#endif
       break;
 
   }
