@@ -4,7 +4,6 @@
 
 #include "PARTICLE.h"
 #include "WALL.h"
-#include "SPRING.h"
 #include <vector>
 //#include <tr1/tuple>
 //#include <map>
@@ -12,21 +11,23 @@
 
 #include "HW1.h"
 
-#define h 0.02 //0.045
+#define h 0.0457 //0.02 //0.045
 
-#define PARTICLE_K 20.0 //20.0 // 461.5  // Nm/kg is gas constant of water vapor
-#define PARTICLE_REST_DENSITY 1000.0 // kg/m^3 is rest density of water particle
-#define PARTICLE_MASS 0.012 // kg
-#define PARTICLE_MEW 5 // 0.00089 // 5.0 // 0.00089 // Ns/m^2 or Pa*s viscosity of water
-//#define N_SURFACE_THRESHOLD 0.05 // 0.05 if |colorFieldNormal| > this, a surface tension force is applied
-#define PARTICLE_THETA 0.5 // 0.073 // N/m  coefficient of surface tension for water
+#define GAS_STIFFNESS 3.0 //20.0 // 461.5  // Nm/kg is gas constant of water vapor
+#define REST_DENSITY 998.29 // kg/m^3 is rest density of water particle
+#define PARTICLE_MASS 0.02 // kg
+#define VISCOSITY 3.5 // 5.0 // 0.00089 // Ns/m^2 or Pa*s viscosity of water
+#define SURFACE_TENSION 0.0728 // N/m 
+#define SURFACE_THRESHOLD 7.065
+#define KERNEL_PARTICLES 20.0
 
+#define GRAVITY_ACCELERATION -9.80665
 
 // not used anymore
 #define WALL_K 500.0 // wall spring constant
 #define WALL_DAMPING -0.9 // wall damping constant
 
-#define BOX_SIZE 0.4
+#define BOX_SIZE 0.6
 #define MAX_PARTICLES 1500
 
 using namespace std;
@@ -42,33 +43,37 @@ public:
   // draw to OGL
   void draw();
   
-  void addParticle(const VEC3F& position);
+  void addParticle(const VEC3D& position);
   
-  void addParticle(const VEC3F& position, const VEC3F& velocity);
+  void addParticle(const VEC3D& position, const VEC3D& velocity);
   
-  void stepVerlet(float dt);
+  void stepVerlet(double dt);
   
-  void stepVerletBrute(float dt);
+  void stepVerletBrute(double dt);
     
   void calculateAcceleration();
   
   void calculateAccelerationBrute();
   
-  void collisionForce(PARTICLE& particle, VEC3F& f_collision);
+  void collisionForce(PARTICLE& particle, VEC3D& f_collision);
   
   void getNeighborParticles(vector<PARTICLE>& totalNeighborParticles, int x, int y, int z);
   
-  float Wpoly6(float radiusSquared);
+  double Wpoly6(double radiusSquared);
   
-  void Wpoly6Gradient(VEC3F& diffPosition, float radiusSquared, VEC3F& gradient);
+  void Wpoly6Gradient(VEC3D& diffPosition, double radiusSquared, VEC3D& gradient);
   
-  float Wpoly6Laplacian(float radiusSquared); 
+  double Wpoly6Laplacian(double radiusSquared); 
   
-  void WspikyGradient(VEC3F& diffPosition, float radiusSquared, VEC3F& gradient);
+  void WspikyGradient(VEC3D& diffPosition, double radiusSquared, VEC3D& gradient);
   
-  float WviscosityLaplacian(float radiusSquared);
+  double WviscosityLaplacian(double radiusSquared);
   
   void toggleGridVisble();
+  
+  void toggleSurfaceVisible();
+  
+  void toggleGravity();
   
   void generateFaucetParticleSet();
   
@@ -77,19 +82,17 @@ public:
   
   
   FIELD_3D* grid;
-  float surfaceThreshold;
+  double surfaceThreshold;
+  VEC3D gravityVector;
 
 private:
   // list of particles, walls, and springs being simulated
   vector<PARTICLE> _particles;
   vector<WALL>     _walls;
-  vector<SPRING>   _springs;
 
   unsigned int _particleCount;
   bool _isGridVisible;
 
-  // add a spring between the two particles
-  void addSpring(int left, int right);
 };
 
 #endif

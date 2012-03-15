@@ -3,10 +3,15 @@
 VEC3F red(1,0,0);
 VEC3F blue(0,0,1); 
 VEC3F black(0,0,0);
+VEC3F green(0,1,0);
+VEC3F lightBlueColor(0.01,0.25,1.0);
+VEC3F purpleColor(0.88,0.08,0.88);
 
 int pCount = 0;
 
-#define PARTICLE_DRAW_RADIUS 0.01//0.01 //0.006
+#define PARTICLE_DRAW_RADIUS 0.015//0.01 //0.006
+
+bool PARTICLE::isSurfaceVisible = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -17,7 +22,7 @@ PARTICLE::PARTICLE()
   //std::cout << "particle constructor\n";
 }
 
-PARTICLE::PARTICLE(const VEC3F& position) :
+PARTICLE::PARTICLE(const VEC3D& position) :
   _position(position)
 {
   _id = pCount++;
@@ -25,10 +30,10 @@ PARTICLE::PARTICLE(const VEC3F& position) :
   //std::cout << "particle constructor with vars\n";
 }
 
-PARTICLE::PARTICLE(const VEC3F& position, const VEC3F& velocity) :
+PARTICLE::PARTICLE(const VEC3D& position, const VEC3D& velocity) :
 _position(position), _velocity(velocity)
 {
-  _id = pCount++;
+  _id = pCount++;  
 }
 
 
@@ -46,13 +51,13 @@ void PARTICLE::draw()
   */
   
   
-  if (_flag)
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
+  if (_flag && isSurfaceVisible)
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, purpleColor);
   else
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, lightBlueColor);
   
   glPushMatrix();
-    glTranslatef(_position[0], _position[1], _position[2]);
+    glTranslated(_position[0], _position[1], _position[2]);
     glutSolidSphere(PARTICLE_DRAW_RADIUS, 10, 10);
   
     /*

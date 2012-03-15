@@ -6,7 +6,8 @@ unsigned int iteration = 0;
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 ///////////////////////////////////////////////////////////////////////////////
-PARTICLE_SYSTEM::PARTICLE_SYSTEM() : _particleCount(0), _isGridVisible(false), surfaceThreshold(0.01)
+PARTICLE_SYSTEM::PARTICLE_SYSTEM() : 
+_particleCount(0), _isGridVisible(false), surfaceThreshold(0.01), gravityVector(0.0,GRAVITY_ACCELERATION,0.0)
 {
   int gridSize = (int)ceil(BOX_SIZE/h);
   grid = new FIELD_3D(gridSize, gridSize, gridSize);
@@ -27,13 +28,13 @@ PARTICLE_SYSTEM::PARTICLE_SYSTEM() : _particleCount(0), _isGridVisible(false), s
   
    // block of particles in right region
   
-  for (float y = -BOX_SIZE/2.0; y < BOX_SIZE/2.0 - 0.01; y+= h) {
-    for (float x = BOX_SIZE/4.0; x < BOX_SIZE/2.0 - 0.01; x += h) {
-      for (float z = -BOX_SIZE/2.0; z < BOX_SIZE/2.0 - 0.01; z+= h) {
+  for (double y = -BOX_SIZE/2.0; y < BOX_SIZE/2.0 - 0.01; y+= h/2.0) {
+    for (double x = BOX_SIZE/4.0; x < BOX_SIZE/2.0 - 0.01; x += h/2.0) {
+      for (double z = -BOX_SIZE/2.0; z < BOX_SIZE/2.0 - 0.01; z+= h/2.0) {
 #ifdef BRUTE
-         _particles.push_back(PARTICLE(VEC3F((offset ? -h/2.0 : 0) + x, y,z)));
+         _particles.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y,z)));
 #else
-        firstGridCell.push_back(PARTICLE(VEC3F((offset ? -h/2.0 : 0) + x, y,z)));
+        firstGridCell.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y,z)));
 #endif
         _particleCount++;
         //cout << firstGridCell.size() << endl;
@@ -49,13 +50,13 @@ PARTICLE_SYSTEM::PARTICLE_SYSTEM() : _particleCount(0), _isGridVisible(false), s
   
   // block of particles in center
   
-  for (float y = -BOX_SIZE/4.0; y < BOX_SIZE/4.0; y+= h) {
-    for (float x = -BOX_SIZE/4.0; x < BOX_SIZE/4.0; x += h) {
-      for (float z = -BOX_SIZE/4.0; z < BOX_SIZE/4.0; z+= h) {
+  for (double y = -BOX_SIZE/4.0; y < BOX_SIZE/4.0; y+= h) {
+    for (double x = -BOX_SIZE/4.0; x < BOX_SIZE/4.0; x += h) {
+      for (double z = -BOX_SIZE/4.0; z < BOX_SIZE/4.0; z+= h) {
 #ifdef BRUTE
-        _particles.push_back(PARTICLE(VEC3F((offset ? -h/2.0 : 0) + x, y + (offset ? -h/4.0 : 0),z + (z % 4 == 0 ? -h/2.0 : 0))));
+        _particles.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y + (offset ? -h/4.0 : 0),z + (z % 4 == 0 ? -h/2.0 : 0))));
 #else
-        firstGridCell.push_back(PARTICLE(VEC3F((offset ? -h/2.0 : 0) + x, y + (offset ? -h/4.0 : 0),z + (offset ? -h/2.0 : 0))));
+        firstGridCell.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y + (offset ? -h/4.0 : 0),z + (offset ? -h/2.0 : 0))));
 #endif
         _particleCount++;
         //cout << firstGridCell.size() << endl;
@@ -85,32 +86,32 @@ PARTICLE_SYSTEM::PARTICLE_SYSTEM() : _particleCount(0), _isGridVisible(false), s
    
   printf("simulating %d particles\n", _particleCount);
   
-  _walls.push_back(WALL(VEC3F(0,0,1), VEC3F(0,0,-BOX_SIZE/2.0)));
-  _walls.push_back(WALL(VEC3F(1,0,0), VEC3F(-BOX_SIZE/2.0,0,0)));
-  _walls.push_back(WALL(VEC3F(-1,0,0), VEC3F(BOX_SIZE/2.0,0,0)));
-  _walls.push_back(WALL(VEC3F(0,1,0), VEC3F(0,-BOX_SIZE/2.0,0)));
-  _walls.push_back(WALL(VEC3F(0,0,-1), VEC3F(0,0,BOX_SIZE/2.0)));
-  //_walls.push_back(WALL(VEC3F(0,-1,0), VEC3F(0,BOX_SIZE/2.0,0)));  // top wall
+  _walls.push_back(WALL(VEC3D(0,0,1), VEC3D(0,0,-BOX_SIZE/2.0)));
+  _walls.push_back(WALL(VEC3D(1,0,0), VEC3D(-BOX_SIZE/2.0,0,0)));
+  _walls.push_back(WALL(VEC3D(-1,0,0), VEC3D(BOX_SIZE/2.0,0,0)));
+  _walls.push_back(WALL(VEC3D(0,1,0), VEC3D(0,-BOX_SIZE/2.0,0)));
+  _walls.push_back(WALL(VEC3D(0,0,-1), VEC3D(0,0,BOX_SIZE/2.0)));
+  //_walls.push_back(WALL(VEC3D(0,-1,0), VEC3D(0,BOX_SIZE/2.0,0)));  // top wall
 }
 
 void PARTICLE_SYSTEM::generateFaucetParticleSet() {
   
-  VEC3F initialVelocity(-1.4,-0.05,0);
+  VEC3D initialVelocity(-1.4,-0.05,0);
   
-  addParticle(VEC3F(BOX_SIZE/2.0-h,-BOX_SIZE/4.0+h*4, 0), initialVelocity);
-  addParticle(VEC3F(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3, 0), initialVelocity);
-  addParticle(VEC3F(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2, 0), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h,-BOX_SIZE/4.0+h*4, 0), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3, 0), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2, 0), initialVelocity);
   
-  addParticle(VEC3F(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2.5, h+0.0001), initialVelocity);
-  addParticle(VEC3F(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2.5, -h+0.0001), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2.5, h+0.0001), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2.5, -h+0.0001), initialVelocity);
   
-  addParticle(VEC3F(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3.5, h), initialVelocity);
-  addParticle(VEC3F(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3.5, -h), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3.5, h), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3.5, -h), initialVelocity);
 
 
 }
 
-void PARTICLE_SYSTEM::addParticle(const VEC3F& position, const VEC3F& velocity) {
+void PARTICLE_SYSTEM::addParticle(const VEC3D& position, const VEC3D& velocity) {
   
 #ifdef BRUTE
   _particles.push_back(PARTICLE(position, velocity));
@@ -121,9 +122,9 @@ void PARTICLE_SYSTEM::addParticle(const VEC3F& position, const VEC3F& velocity) 
   _particleCount++;
 }
 
-void PARTICLE_SYSTEM::addParticle(const VEC3F& position) {
+void PARTICLE_SYSTEM::addParticle(const VEC3D& position) {
   
-  addParticle(position, VEC3F());
+  addParticle(position, VEC3D());
 }
 
 PARTICLE_SYSTEM::~PARTICLE_SYSTEM()
@@ -135,13 +136,24 @@ void PARTICLE_SYSTEM::toggleGridVisble() {
   _isGridVisible = !_isGridVisible;
 }
 
+void PARTICLE_SYSTEM::toggleSurfaceVisible() {
+  PARTICLE::isSurfaceVisible = !PARTICLE::isSurfaceVisible;
+}
+
+void PARTICLE_SYSTEM::toggleGravity() {
+  if (gravityVector.magnitude() > 0.0) {
+    gravityVector = VEC3D(0,0,0);
+  }
+  else {
+    gravityVector = VEC3D(0,GRAVITY_ACCELERATION,0);
+  }
+}
+
 // to update the grid cells particles are located in
 // should be called right after particle positions are updated
 void PARTICLE_SYSTEM::updateGrid() {
   //cout << "updateGrid()" << endl;
-  
-  //static float invGridSpacing = 1.0/h;
-  
+    
   for (unsigned int x = 0; x < (*grid).xRes(); x++) {
     for (unsigned int y = 0; y < (*grid).yRes(); y++) {
       for (unsigned int z = 0; z < (*grid).zRes(); z++) {
@@ -203,15 +215,18 @@ void PARTICLE_SYSTEM::updateGrid() {
 ///////////////////////////////////////////////////////////////////////////////
 void PARTICLE_SYSTEM::draw() 
 { 
-  VEC3F black(0,0,0); 
-  VEC3F blue(0,0,1); 
-  VEC3F white(1,1,1); 
-  VEC3F green(34.0 / 255, 139.0 / 255, 34.0 / 255);
-  float shininess = 20.0;
+  static VEC3F blackColor(0,0,0); 
+  static VEC3F blueColor(0,0,1); 
+  static VEC3F whiteColor(1,1,1);
+  static VEC3F greyColor(0.2, 0.2, 0.2);
+  static VEC3F lightGreyColor(0.8,0.8,0.8);
+  //static VEC3F greenColor(34.0 / 255, 139.0 / 255, 34.0 / 255);
+  static float shininess = 10.0;
 
   // draw the particles
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
-  glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+  glEnable(GL_LIGHTING);
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, blueColor);
+  glMaterialfv(GL_FRONT, GL_SPECULAR, whiteColor);
   glMaterialfv(GL_FRONT, GL_SHININESS, &shininess);
   
   //for (unsigned int x = 0; x < _particles.size(); x++)
@@ -238,19 +253,22 @@ void PARTICLE_SYSTEM::draw()
     
   }
   
+  glDisable(GL_LIGHTING);
   
   if (_isGridVisible) {
   
     // draw the grid
     
-    float offset = -BOX_SIZE/2.0+h/2.0;
+    glColor3fv(lightGreyColor);
+    
+    double offset = -BOX_SIZE/2.0+h/2.0;
     
     for (int x = 0; x < grid->xRes(); x++) {
       for (int y = 0; y < grid->yRes(); y++) {
         for (int z = 0; z < grid->zRes(); z++) {
           glPushMatrix();
           
-          glTranslatef(x*h+offset, y*h+offset, z*h+offset);
+          glTranslated(x*h+offset, y*h+offset, z*h+offset);
           glutWireCube(h);
           
           glPopMatrix();
@@ -263,6 +281,7 @@ void PARTICLE_SYSTEM::draw()
 
 #endif
 
+  glColor3fv(greyColor);
   
   glutWireCube(BOX_SIZE);
   
@@ -299,7 +318,7 @@ void PARTICLE_SYSTEM::draw()
 ///////////////////////////////////////////////////////////////////////////////
 // Verlet integration
 ///////////////////////////////////////////////////////////////////////////////
-void PARTICLE_SYSTEM::stepVerlet(float dt)
+void PARTICLE_SYSTEM::stepVerlet(double dt)
 {
   
   
@@ -316,8 +335,8 @@ void PARTICLE_SYSTEM::stepVerlet(float dt)
       
       PARTICLE& particle = particles[p];
       
-      VEC3F newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
-      VEC3F newVelocity = (newPosition - particle.position()) / dt;
+      VEC3D newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
+      VEC3D newVelocity = (newPosition - particle.position()) / dt;
       
       particle.position() = newPosition;
       particle.velocity() = newVelocity;
@@ -336,7 +355,7 @@ void PARTICLE_SYSTEM::stepVerlet(float dt)
 ///////////////////////////////////////////////////////////////////////////////
 // Verlet integration
 ///////////////////////////////////////////////////////////////////////////////
-void PARTICLE_SYSTEM::stepVerletBrute(float dt)
+void PARTICLE_SYSTEM::stepVerletBrute(double dt)
 {
   if (_particleCount < MAX_PARTICLES && iteration % 12 == 0) {
     generateFaucetParticleSet();
@@ -348,8 +367,8 @@ void PARTICLE_SYSTEM::stepVerletBrute(float dt)
     
     PARTICLE& particle = _particles[i];
     
-    VEC3F newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
-    VEC3F newVelocity = (newPosition - particle.position()) / dt;
+    VEC3D newPosition = particle.position() + particle.velocity()*dt + particle.acceleration()*dt*dt;
+    VEC3D newVelocity = (newPosition - particle.position()) / dt;
     
     particle.position() = newPosition;
     particle.velocity() = newVelocity;
@@ -360,8 +379,8 @@ void PARTICLE_SYSTEM::stepVerletBrute(float dt)
 }
 
 
-//float totalDensity = 0.0;
-//VEC3F totalPressure;
+//double totalDensity = 0.0;
+//VEC3D totalPressure;
 //int neighborsVisited = 0;
 
 void PARTICLE_SYSTEM::calculateAcceleration() {
@@ -401,9 +420,9 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
                   
                   PARTICLE& neighborParticle = neighborGridCellParticles[i];
                   
-                  VEC3F diffPosition = particle.position() - neighborParticle.position();
+                  VEC3D diffPosition = particle.position() - neighborParticle.position();
                   
-                  float radiusSquared = diffPosition.dot(diffPosition);
+                  double radiusSquared = diffPosition.dot(diffPosition);
                   
                   if (radiusSquared <= h*h)
                     particle.density() += Wpoly6(radiusSquared);
@@ -417,36 +436,11 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
                         
           // p = k(density - density_rest)
           
-          particle.pressure() = PARTICLE_K * (particle.density() - PARTICLE_REST_DENSITY);  /// ADDED MINUS HERE TO FRONT
-          
+          particle.pressure() = GAS_STIFFNESS * (particle.density() - REST_DENSITY);           
         }
       }
     }
   }
-  
-  /*
-  
-  //////////// testing total density
-  
-  for (int gridCellIndex = 0; gridCellIndex < (*grid).cellCount(); gridCellIndex++) {
-    
-    vector<PARTICLE>& particles = (*grid).data()[gridCellIndex];
-    
-    for (int p = 0; p < particles.size(); p++) {
-      
-      PARTICLE& particle = particles[p];
-      
-      totalDensity += particle.density();
-      
-    }
-  }
-  
-  
-  //////////
-   */
-  
-  
-  //cout << "total density (GRID): " << totalDensity << endl;
   
   ///////////////////
   // STEP 2: COMPUTE FORCES FOR ALL PARTICLES
@@ -463,14 +457,13 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
           
           //cout << "particle id: " << particle.id() << endl;
           
-          VEC3F f_pressure, 
+          VEC3D f_pressure, 
           f_viscosity, 
           f_surface, 
-          f_gravity(0.0, particle.density() * -9.80665, 0.0),
-          n, 
+          f_gravity = gravityVector * particle.density(),
           colorFieldNormal;
           
-          float colorFieldLaplacian;
+          double colorFieldLaplacian;
                     
           // now iteratate through neighbors
           
@@ -494,46 +487,39 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
                   
                   //if (particle.id() == neighbor.id()) continue; // SKIPPING COMPARISON OF THE SAME PARTICLE
                   
-                  VEC3F diffPosition = particle.position() - neighbor.position();
-                  //VEC3F diffPositionNormalized = diffPosition.normal(); // need?
-                  float radiusSquared = diffPosition.dot(diffPosition);
+                  VEC3D diffPosition = particle.position() - neighbor.position();
+                  double radiusSquared = diffPosition.dot(diffPosition);
                   
                   if (radiusSquared <= h*h) {
                     
+                    VEC3D poly6Gradient, spikyGradient;
                     
+                    Wpoly6Gradient(diffPosition, radiusSquared, poly6Gradient);
                     
-                    if (radiusSquared > 0.0) {
+                    WspikyGradient(diffPosition, radiusSquared, spikyGradient);
+                    
+                    if (particle.id() != neighbor.id()) {
                       
-                      //neighborsVisited++;
-                      //cout << neighborsVisited << endl;
-                      //cout << neighbor.id() << endl;
+                      f_pressure += (particle.pressure()/pow(particle.density(),2)+neighbor.pressure()/pow(neighbor.density(),2))*spikyGradient;
                       
-                      VEC3F gradient;
-                                            
-                      Wpoly6Gradient(diffPosition, radiusSquared, gradient);
-                                            
-                      f_pressure += (particle.pressure() + neighbor.pressure()) / (2.0 * neighbor.density()) * gradient;
-                      
-                      colorFieldNormal += gradient / neighbor.density();
+                      f_viscosity += (neighbor.velocity() - particle.velocity()) * WviscosityLaplacian(radiusSquared) / neighbor.density();
+
                     }
                     
-                    f_viscosity += (neighbor.velocity() - particle.velocity()) * WviscosityLaplacian(radiusSquared) / neighbor.density();
+                                        
+                    colorFieldNormal += poly6Gradient / neighbor.density();
                     
                     colorFieldLaplacian += Wpoly6Laplacian(radiusSquared) / neighbor.density();
+                    
                   }
-                  
                 }
               }
             }
           } // end of neighbor grid cell iteration
           
-          f_pressure *= -PARTICLE_MASS;
+          f_pressure *= -PARTICLE_MASS * particle.density();
           
-          //totalPressure += f_pressure;
-          
-          //cout << "pressure: " << f_pressure << endl;
-          
-          f_viscosity *= PARTICLE_MEW * PARTICLE_MASS;
+          f_viscosity *= VISCOSITY * PARTICLE_MASS;
           
           colorFieldNormal *= PARTICLE_MASS;
           
@@ -545,12 +531,12 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
           
           // surface tension force
           
-          float colorFieldNormalMagnitude = colorFieldNormal.magnitude();
+          double colorFieldNormalMagnitude = colorFieldNormal.magnitude();
           
-          if (colorFieldNormalMagnitude > surfaceThreshold) {
+          if (colorFieldNormalMagnitude > SURFACE_THRESHOLD) {
             
             particle.flag() = true;
-            //f_surface = -PARTICLE_THETA * colorFieldLaplacian * colorFieldNormal / colorFieldNormalMagnitude;
+            f_surface = -SURFACE_TENSION * colorFieldNormal / colorFieldNormalMagnitude * colorFieldLaplacian;
             
           }
           else {
@@ -567,7 +553,7 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
           
           // EXTERNAL FORCES HERE (USER INTERACTION, SWIRL)
           
-          VEC3F f_collision; 
+          VEC3D f_collision; 
           collisionForce(particle, f_collision);
           
           
@@ -583,13 +569,13 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
 }
 
 
-void PARTICLE_SYSTEM::collisionForce(PARTICLE& particle, VEC3F& f_collision) {
+void PARTICLE_SYSTEM::collisionForce(PARTICLE& particle, VEC3D& f_collision) {
     
   for (unsigned int i = 0; i < _walls.size(); i++) {
     
     WALL& wall = _walls[i];
     
-    float d = (wall.point() - particle.position()).dot(wall.normal()) + 0.01; // particle radius
+    double d = (wall.point() - particle.position()).dot(wall.normal()) + 0.01; // particle radius
     
     if (d > 0.0) {
       particle.position() += d * wall.normal();
@@ -604,50 +590,45 @@ void PARTICLE_SYSTEM::collisionForce(PARTICLE& particle, VEC3F& f_collision) {
 }
 
 
-float PARTICLE_SYSTEM::Wpoly6(float radiusSquared) {  // checked
+double PARTICLE_SYSTEM::Wpoly6(double radiusSquared) { 
     
-  static float coefficient = 315.0/(64.0*M_PI*pow(h,9));
-  static float hSquared = h*h;
+  static double coefficient = 315.0/(64.0*M_PI*pow(h,9));
+  static double hSquared = h*h;
   
   return coefficient * pow(hSquared-radiusSquared, 3);
 }
 
-void PARTICLE_SYSTEM::Wpoly6Gradient(VEC3F& diffPosition, float radiusSquared, VEC3F& gradient) {  
+void PARTICLE_SYSTEM::Wpoly6Gradient(VEC3D& diffPosition, double radiusSquared, VEC3D& gradient) {  
     
-  static float coefficient = -6.0*315.0/(64.0*M_PI*pow(h,9));
-  static float hSquared = h*h;
-  
-  float weight = coefficient * pow(hSquared-radiusSquared, 2);
-  
-  gradient = weight * diffPosition;
+  static double coefficient = -945.0/(32.0*M_PI*pow(h,9));
+  static double hSquared = h*h;
+    
+  gradient = coefficient * pow(hSquared-radiusSquared, 2) * diffPosition;
 }
 
-float PARTICLE_SYSTEM::Wpoly6Laplacian(float radiusSquared) {
+double PARTICLE_SYSTEM::Wpoly6Laplacian(double radiusSquared) {
     
-  static float coefficient = 315.0/(64.0*M_PI*pow(h,9));
-  static float hSquared = h*h;
-  
-  float hSquaredMinusRadiusSquared = hSquared - radiusSquared;
-  
-  return coefficient * (-18.0*pow(hSquaredMinusRadiusSquared, 2) + 24.0*radiusSquared*hSquaredMinusRadiusSquared);
+  static double coefficient = -945.0/(32.0*M_PI*pow(h,9));
+  static double hSquared = h*h;
+    
+  return coefficient * (hSquared-radiusSquared) * (3.0*hSquared - 7.0*radiusSquared);
 }
 
-
-void PARTICLE_SYSTEM::WspikyGradient(VEC3F& diffPosition, float radiusSquared, VEC3F& gradient) {  // 
+void PARTICLE_SYSTEM::WspikyGradient(VEC3D& diffPosition, double radiusSquared, VEC3D& gradient) {  // 
   
-  static float coefficient = -3.0 * 15.0/(M_PI*pow(h,6));
+  static double coefficient = -45.0/(M_PI*pow(h,6));
   
-  float radius = sqrt(radiusSquared);
+  double radius = sqrt(radiusSquared);
   
-  gradient = coefficient * pow(h-radius, 2) / radius * diffPosition;
+  gradient = coefficient * pow(h-radius, 2) * diffPosition / radius;
 }
  
 
-float PARTICLE_SYSTEM::WviscosityLaplacian(float radiusSquared) {  // checked
+double PARTICLE_SYSTEM::WviscosityLaplacian(double radiusSquared) {  
   
-  static float coefficient = 45.0/(M_PI*pow(h,6));
+  static double coefficient = 45.0/(M_PI*pow(h,6));
   
-  float radius = sqrt(radiusSquared);
+  double radius = sqrt(radiusSquared);
   
   return coefficient * (h - radius);    
 }
@@ -662,13 +643,13 @@ float PARTICLE_SYSTEM::WviscosityLaplacian(float radiusSquared) {  // checked
  
  if (n_mag > N_SURFACE_THRESHOLD) {  
  
- VEC3F colorFieldLaplacian; // laplacian of colorfield
+ VEC3D colorFieldLaplacian; // laplacian of colorfield
  
  for (int j = 0; j < numNeighborParticles; j++) {
  
  PARTICLE& neighbor = neighbors[j];
  
- VEC3F diffPosition = particle.position() - neighbor.position();
+ VEC3D diffPosition = particle.position() - neighbor.position();
  
  colorFieldLaplacian += PARTICLE_MASS / neighbor.density() * Wpoly6Laplacian(diffPosition) * diffPosition.normal();
  
@@ -676,7 +657,7 @@ float PARTICLE_SYSTEM::WviscosityLaplacian(float radiusSquared) {  // checked
  
  particle.flag() = true;
  
- f_surface = -PARTICLE_THETA * colorFieldLaplacian * (n / n_mag);
+ f_surface = -SURFACE_TENSION * colorFieldLaplacian * (n / n_mag);
  
  }
  else {
@@ -707,9 +688,9 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
       
       PARTICLE& neighborParticle = _particles[j];
       
-      VEC3F diffPosition = particle.position() - neighborParticle.position();
+      VEC3D diffPosition = particle.position() - neighborParticle.position();
       
-      float radiusSquared = diffPosition.dot(diffPosition);
+      double radiusSquared = diffPosition.dot(diffPosition);
       
       if (radiusSquared <= h*h)
         particle.density() += Wpoly6(radiusSquared);
@@ -719,7 +700,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     // p = k(density - density_rest)
     
-    particle.pressure() = PARTICLE_K * (particle.density() - PARTICLE_REST_DENSITY);
+    particle.pressure() = GAS_STIFFNESS * (particle.density() - REST_DENSITY);
   
     //totalDensity += particle.density();
   }
@@ -738,21 +719,21 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     //cout << "particle id: " << particle.id() << endl;
     
-    VEC3F f_pressure, 
+    VEC3D f_pressure, 
     f_viscosity, 
     f_surface, 
     f_gravity(0.0, particle.density() * -9.80665, 0.0),
     n, 
     colorFieldNormal,
     colorFieldLaplacian; // n is gradient of colorfield
-    //float n_mag;
+    //double n_mag;
     
     for (int j = 0; j < _particleCount; j++) {
       PARTICLE& neighbor = _particles[j];
       
-      VEC3F diffPosition = particle.position() - neighbor.position();
-      VEC3F diffPositionNormalized = diffPosition.normal(); // need?
-      float radiusSquared = diffPosition.dot(diffPosition);
+      VEC3D diffPosition = particle.position() - neighbor.position();
+      VEC3D diffPositionNormalized = diffPosition.normal(); // need?
+      double radiusSquared = diffPosition.dot(diffPosition);
       
       if (radiusSquared <= h*h) {
         
@@ -764,7 +745,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
           
           //cout << neighbor.id() << endl;
           
-          VEC3F gradient;
+          VEC3D gradient;
                     
           Wpoly6Gradient(diffPosition, radiusSquared, gradient);
                     
@@ -784,7 +765,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     //totalPressure += f_pressure;
     
-    f_viscosity *= PARTICLE_MEW * PARTICLE_MASS;
+    f_viscosity *= VISCOSITY * PARTICLE_MASS;
     
     colorFieldNormal *= PARTICLE_MASS;
     
@@ -796,13 +777,13 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
      
      if (n_mag > N_SURFACE_THRESHOLD) {  
      
-     VEC3F colorFieldLaplacian; // laplacian of colorfield
+     VEC3D colorFieldLaplacian; // laplacian of colorfield
      
      for (int j = 0; j < numNeighborParticles; j++) {
      
      PARTICLE& neighbor = neighbors[j];
      
-     VEC3F diffPosition = particle.position() - neighbor.position();
+     VEC3D diffPosition = particle.position() - neighbor.position();
      
      colorFieldLaplacian += PARTICLE_MASS / neighbor.density() * Wpoly6Laplacian(diffPosition) * diffPosition.normal();
      
@@ -810,7 +791,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
      
      particle.flag() = true;
      
-     f_surface = -PARTICLE_THETA * colorFieldLaplacian * (n / n_mag);
+     f_surface = -SURFACE_TENSION * colorFieldLaplacian * (n / n_mag);
      
      }
      else {
@@ -820,12 +801,12 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     // surface tension force
     
-    float colorFieldNormalMagnitude = colorFieldNormal.magnitude();
+    double colorFieldNormalMagnitude = colorFieldNormal.magnitude();
     
     if (colorFieldNormalMagnitude > surfaceThreshold) {
       
       particle.flag() = true;
-      f_surface = -PARTICLE_THETA * colorFieldLaplacian * colorFieldNormal / colorFieldNormalMagnitude;
+      f_surface = -SURFACE_TENSION * colorFieldLaplacian * colorFieldNormal / colorFieldNormalMagnitude;
       
     }
     else {
@@ -839,7 +820,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     // EXTERNAL FORCES HERE (USER INTERACTION, SWIRL)
     
-    VEC3F f_collision;
+    VEC3D f_collision;
     
     collisionForce(particle, f_collision);    
   

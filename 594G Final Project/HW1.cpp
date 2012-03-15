@@ -30,7 +30,7 @@ GLVU glvu;
 
 PARTICLE_SYSTEM particleSystem;
 
-float dt = 1.0 / 1000.0;
+double dt = 1.0 / 250.0;
 bool animate = false;
 
 ///////////////////////////////////////////////////////////////////////
@@ -156,14 +156,22 @@ void keyboardCallback(unsigned char key, int x, int y)
 #endif
       break;
       
-      case '=':
+    case '=':
       particleSystem.surfaceThreshold += 0.1;
       cout << "surface threshold: " << particleSystem.surfaceThreshold << endl;
       break;
       
-      case '-':
+    case '-':
       particleSystem.surfaceThreshold -= 0.1;
       cout << "surface threshold: " << particleSystem.surfaceThreshold << endl;
+      break;
+      
+    case 's':
+      particleSystem.toggleSurfaceVisible();
+      break;
+      
+    case '/':
+      particleSystem.toggleGravity();
       break;
 
   }
@@ -237,13 +245,15 @@ int main(int argc, char** argv)
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
   // enable lights
-  GLfloat ambient[] = {0.5,0.5,0.5};
-  GLfloat diffuse[] = {0.5, 0.5, 0.5};
-  GLfloat specular[] = {0.5, 0.5, 0.5};
+  GLfloat ambient[] = {0.7,0.7,0.7};
+  GLfloat diffuse[] = {1.0,1.0,1.0};
+  GLfloat specular[] = {0.0, 0.0, 0.0};
+  GLfloat lightPosition[] = { 0.0, 2.0, 0.0 };
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
   glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+  //glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   

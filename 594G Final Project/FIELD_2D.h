@@ -16,7 +16,7 @@ public:
   virtual ~FIELD_2D();
 
   // (x,y) accessor
-  inline float& operator()(int x, int y) {
+  inline double& operator()(int x, int y) {
     
     if (x < 0) {
       printf("x:%d y:%d\n", x, y);
@@ -33,7 +33,7 @@ public:
   FIELD_2D& operator=(const FIELD_2D& field);
 
   // scale the field by a constant
-  FIELD_2D& operator*=(const float& scalar);
+  FIELD_2D& operator*=(const double& scalar);
 
   // add another field to this field
   FIELD_2D& operator+=(const FIELD_2D& field);
@@ -45,7 +45,7 @@ public:
   int xRes() const { return _xRes; };
   int yRes() const { return _yRes; };
   int totalCells() const { return _xRes * _yRes; };
-  float*& data() { return _data; };
+  double*& data() { return _data; };
 
   // set the size of the array
   void resize(int xRes, int yRes);
@@ -56,20 +56,20 @@ public:
   void print();
 
   // squared sum of entries
-  float squaredSum() const;
+  double squaredSum() const;
   
   // dot product with another field
-  float dotProduct(FIELD_2D& field) const;
+  double dotProduct(FIELD_2D& field) const;
 
   // axpy operation with another field
   // this = this + scalar * field
-  void axpy(const float& scalar, const FIELD_2D& field);
+  void axpy(const double& scalar, const FIELD_2D& field);
 
 private:
   int _xRes;
   int _yRes;
 
-  float* _data;
+  double* _data;
 };
 
 #endif

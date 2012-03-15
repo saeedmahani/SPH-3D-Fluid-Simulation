@@ -9,8 +9,8 @@
 #include <GL/glu.h>
 #endif
 
-#include "SPRING.h"
 #include "VEC3F.h"
+#include "VEC3D.h"
 #include <vector>
 
 using namespace std;
@@ -20,13 +20,16 @@ using namespace std;
 class PARTICLE {
   
   
+
   
 public:
   
+  static bool isSurfaceVisible;
+  
   //static unsigned int count;
   PARTICLE();
-  PARTICLE(const VEC3F& position);
-  PARTICLE(const VEC3F& position, const VEC3F& velocity);
+  PARTICLE(const VEC3D& position);
+  PARTICLE(const VEC3D& position, const VEC3D& velocity);
 
   // draw to OGL
   void draw();
@@ -35,33 +38,33 @@ public:
   void clearForce() { _force *= 0; };
 
   // accumulate forces
-  void addForce(VEC3F newForce) { _force += newForce; };
+  void addForce(VEC3D newForce) { _force += newForce; };
   
   void calculateAcceleration();
 
   // accessors
-  VEC3F& position() { return _position; };
-  VEC3F& velocity() { return _velocity; };
-  VEC3F& acceleration() { return _acceleration; }
-  VEC3F& force()    { return _force; };
-  float& density()  { return _density; };
-  float& pressure() { return _pressure; };
+  VEC3D& position() { return _position; };
+  VEC3D& velocity() { return _velocity; };
+  VEC3D& acceleration() { return _acceleration; }
+  VEC3D& force()    { return _force; };
+  double& density()  { return _density; };
+  double& pressure() { return _pressure; };
   bool& flag() { return _flag; };
   int& id() { return _id; };
-  VEC3F normal;
+  VEC3D normal;
   
 private:  
-  VEC3F _position;
-  VEC3F _velocity;
-  VEC3F _force;
-  VEC3F _acceleration;
-  float _density;
-  float _pressure;
+  VEC3D _position;
+  VEC3D _velocity;
+  VEC3D _force;
+  VEC3D _acceleration;
+  double _density;
+  double _pressure;
   bool _flag;
   int _id;
   
+    
 };
 
-//unsigned int PARTICLE::count = 0;
 
 #endif
