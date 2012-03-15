@@ -84,7 +84,7 @@ void displayCallback()
   particleSystem.draw();
 
   // swap the buffers
-  glutSwapBuffers();
+  //glutSwapBuffers();
   
   glvu.EndFrame();
 }
@@ -154,6 +154,16 @@ void keyboardCallback(unsigned char key, int x, int y)
 #ifndef BRUTE
       particleSystem.toggleGridVisble();
 #endif
+      break;
+      
+      case '=':
+      particleSystem.surfaceThreshold += 0.1;
+      cout << "surface threshold: " << particleSystem.surfaceThreshold << endl;
+      break;
+      
+      case '-':
+      particleSystem.surfaceThreshold -= 0.1;
+      cout << "surface threshold: " << particleSystem.surfaceThreshold << endl;
       break;
 
   }

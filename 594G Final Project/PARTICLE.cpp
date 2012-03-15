@@ -46,26 +46,26 @@ void PARTICLE::draw()
   */
   
   
-  //if (_flag)
-  //  glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
-  //else
+  if (_flag)
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
+  else
     glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
   
   glPushMatrix();
     glTranslatef(_position[0], _position[1], _position[2]);
     glutSolidSphere(PARTICLE_DRAW_RADIUS, 10, 10);
   
-  glColor3f(1.0, 0, 0);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
-  glBegin(GL_LINES);
+    /*
+    glColor3f(1.0, 0, 0);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
+    glBegin(GL_LINES);
+    
+    glVertex3f(0, 0, 0);
+    glVertex3fv(normal*0.001);
+    
+    glEnd();
   
-  //cout << color << endl;
-  
-  glVertex3f(0, 0, 0);
-  glVertex3f(color[0]*PARTICLE_DRAW_RADIUS*4.0, color[1]*PARTICLE_DRAW_RADIUS*4.0, color[2]*PARTICLE_DRAW_RADIUS*4.0);
-  
-  glEnd();
-  
+   */
   
   glPopMatrix();
   

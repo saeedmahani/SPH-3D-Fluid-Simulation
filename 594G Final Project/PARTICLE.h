@@ -48,7 +48,7 @@ public:
   float& pressure() { return _pressure; };
   bool& flag() { return _flag; };
   int& id() { return _id; };
-  VEC3F color;
+  VEC3F normal;
   
 private:  
   VEC3F _position;

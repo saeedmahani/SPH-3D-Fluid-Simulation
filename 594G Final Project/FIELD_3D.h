@@ -20,13 +20,14 @@ public:
   
   inline particleVector& operator()(int x, int y, int z) {
     
-    assert(x >= 0);
+    /*assert(x >= 0);
     assert(x < _xRes);
     assert(y >= 0);
     assert(y < _yRes);
     assert(z >= 0);
     assert(z < _zRes); // i*length*width + j*width + k
     //return _data[x*_xRes*_yRes + y*_xRes + z];
+     */
     return _data[x + y*_xRes + z*_xRes*_yRes];
   }
   

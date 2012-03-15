@@ -14,13 +14,15 @@
 
 #define h 0.02 //0.045
 
-#define PARTICLE_K 20.0 // 461.5  // Nm/kg is gas constant of water vapor
+#define PARTICLE_K 20.0 //20.0 // 461.5  // Nm/kg is gas constant of water vapor
 #define PARTICLE_REST_DENSITY 1000.0 // kg/m^3 is rest density of water particle
 #define PARTICLE_MASS 0.012 // kg
-#define PARTICLE_MEW 5.0 // 0.00089 // Ns/m^2 or Pa*s viscosity of water
-#define N_SURFACE_THRESHOLD 1209102910291029 // 0.05
-#define PARTICLE_THETA 0.073 // N/m  coefficient of surface tension for water
+#define PARTICLE_MEW 5 // 0.00089 // 5.0 // 0.00089 // Ns/m^2 or Pa*s viscosity of water
+//#define N_SURFACE_THRESHOLD 0.05 // 0.05 if |colorFieldNormal| > this, a surface tension force is applied
+#define PARTICLE_THETA 0.5 // 0.073 // N/m  coefficient of surface tension for water
 
+
+// not used anymore
 #define WALL_K 500.0 // wall spring constant
 #define WALL_DAMPING -0.9 // wall damping constant
 
@@ -62,7 +64,7 @@ public:
   
   float Wpoly6Laplacian(float radiusSquared); 
   
-  float WspikyGradient(VEC3F& r); // gradient of spiky kernel
+  void WspikyGradient(VEC3F& diffPosition, float radiusSquared, VEC3F& gradient);
   
   float WviscosityLaplacian(float radiusSquared);
   
@@ -75,6 +77,7 @@ public:
   
   
   FIELD_3D* grid;
+  float surfaceThreshold;
 
 private:
   // list of particles, walls, and springs being simulated
