@@ -5,8 +5,6 @@ For our final project in Theodore Kim's Physics-Based Simulation class we were a
 
 Feel free to email me and I'll tell you more about this project!
 
-___
-
 ## Using the Simulator ##
 
 Firstly, click & drag to rotate the scene using typical GLVU camera controls. You'll notice the simulation starts in a stopped state - you'll need to toggle the animation ON. Below are some keyboard controls.
@@ -25,7 +23,7 @@ g -- Toggle grid visible (grid used for neighbor particle optimization)
 / -- Toggle gravity on/off  
 s -- Toggle coloring of surface purple (particles on the surface have a surface tension force applied)  
 f -- Output current FPS to stdout  
-___
+
 
 ## References ##
 
