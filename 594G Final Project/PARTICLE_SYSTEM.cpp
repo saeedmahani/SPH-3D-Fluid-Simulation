@@ -1,112 +1,165 @@
 #include "PARTICLE_SYSTEM.h"
 
 
+
+
 unsigned int iteration = 0;
+int scenario;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 ///////////////////////////////////////////////////////////////////////////////
 PARTICLE_SYSTEM::PARTICLE_SYSTEM() : 
-_particleCount(0), _isGridVisible(false), surfaceThreshold(0.01), gravityVector(0.0,GRAVITY_ACCELERATION,0.0)
+_isGridVisible(false), surfaceThreshold(0.01), gravityVector(0.0,GRAVITY_ACCELERATION,0.0), grid(NULL)
 {
-  int gridSize = (int)ceil(BOX_SIZE/h);
-  grid = new FIELD_3D(gridSize, gridSize, gridSize);
+  loadScenario(INITIAL_SCENARIO);
+}
 
-  vector<PARTICLE>& firstGridCell = (*grid)(0,0,0);
-  //firstGridCell.reserve(200);
+void PARTICLE_SYSTEM::loadScenario(int newScenario) {
+  
+  scenario = newScenario;
+  
+  // remove all particles
+  
+  if (grid) {
+    delete grid;
+    
+  }
+    
+  _walls.clear();
   
   
-#ifdef BRUTE
-  cout << "using BRUTE neighbor method" << endl;
-#else
-  cout << "using GRID neighbor method" << endl;
-#endif
+  // reset params
   
-  bool offset = false;
+  PARTICLE::count = 0;
   
+  iteration = 0;
+    
   
-  
-   // block of particles in right region
-  
-  for (double y = -BOX_SIZE/2.0; y < BOX_SIZE/2.0 - 0.01; y+= h/2.0) {
-    for (double x = BOX_SIZE/4.0; x < BOX_SIZE/2.0 - 0.01; x += h/2.0) {
-      for (double z = -BOX_SIZE/2.0; z < BOX_SIZE/2.0 - 0.01; z+= h/2.0) {
-#ifdef BRUTE
-         _particles.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y,z)));
-#else
-        firstGridCell.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y,z)));
-#endif
-        _particleCount++;
-        //cout << firstGridCell.size() << endl;
-         
+  if (scenario == SCENARIO_DAM) {
+    
+    // create long grid
+    
+    boxSize.x = BOX_SIZE*2.0;
+    boxSize.y = BOX_SIZE;
+    boxSize.z = BOX_SIZE/2.0;
+    
+    int gridXRes = (int)ceil(boxSize.x/h);
+    int gridYRes = (int)ceil(boxSize.y/h);
+    int gridZRes = (int)ceil(boxSize.z/h);
+    
+    grid = new FIELD_3D(gridXRes, gridYRes, gridZRes);
+    
+    
+    // add walls 
+    
+    _walls.push_back(WALL(VEC3D(0,0,1), VEC3D(0,0,-boxSize.z/2.0))); // back
+    _walls.push_back(WALL(VEC3D(0,0,-1), VEC3D(0,0,boxSize.z/2.0))); // front
+    _walls.push_back(WALL(VEC3D(1,0,0), VEC3D(-boxSize.x/2.0,0,0)));     // left
+    _walls.push_back(WALL(VEC3D(-1,0,0), VEC3D(boxSize.x/2.0,0,0)));     // right
+    _walls.push_back(WALL(VEC3D(0,1,0), VEC3D(0,-boxSize.y/2.0,0))); // bottom
+    
+    vector<PARTICLE>& firstGridCell = (*grid)(0,0,0);
+    
+    // add particles
+    
+    for (double y = -boxSize.y/2.0; y < boxSize.y/2.0; y+= h/2.0) {
+      for (double x = -boxSize.x/2.0; x < -boxSize.x/4.0; x += h/2.0) {
+        for (double z = -boxSize.z/2.0; z < boxSize.z/2.0; z+= h/2.0) {
+          firstGridCell.push_back(PARTICLE(VEC3D(x, y,z)));
+        }
       }
     }
-    offset = !offset;
+    
+    cout << "Loaded dam scenario" << endl;
+    cout << "Grid size is " << (*grid).xRes() << "x" << (*grid).yRes() << "x" << (*grid).zRes() << endl;
+    cout << "Simulating " << PARTICLE::count << " particles" << endl;
+    
   }
-   
-   
-  
-   /*
-  
-  // block of particles in center
-  
-  for (double y = -BOX_SIZE/4.0; y < BOX_SIZE/4.0; y+= h) {
-    for (double x = -BOX_SIZE/4.0; x < BOX_SIZE/4.0; x += h) {
-      for (double z = -BOX_SIZE/4.0; z < BOX_SIZE/4.0; z+= h) {
-#ifdef BRUTE
-        _particles.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y + (offset ? -h/4.0 : 0),z + (z % 4 == 0 ? -h/2.0 : 0))));
-#else
-        firstGridCell.push_back(PARTICLE(VEC3D((offset ? -h/2.0 : 0) + x, y + (offset ? -h/4.0 : 0),z + (offset ? -h/2.0 : 0))));
-#endif
-        _particleCount++;
-        //cout << firstGridCell.size() << endl;
-        
+  else if (scenario == SCENARIO_CUBE) {
+    
+    // create cubed grid
+    
+    boxSize.x = BOX_SIZE;
+    boxSize.y = BOX_SIZE;
+    boxSize.z = BOX_SIZE;
+    
+    int gridXRes = (int)ceil(boxSize.x/h);
+    int gridYRes = (int)ceil(boxSize.y/h);
+    int gridZRes = (int)ceil(boxSize.z/h);
+    
+    grid = new FIELD_3D(gridXRes, gridYRes, gridZRes);
+    
+    // add walls 
+    
+    _walls.push_back(WALL(VEC3D(0,0,1), VEC3D(0,0,-boxSize.z/2.0))); // back
+    _walls.push_back(WALL(VEC3D(0,0,-1), VEC3D(0,0,boxSize.z/2.0))); // front
+    _walls.push_back(WALL(VEC3D(1,0,0), VEC3D(-boxSize.x/2.0,0,0))); // left
+    _walls.push_back(WALL(VEC3D(-1,0,0), VEC3D(boxSize.x/2.0,0,0))); // right
+    _walls.push_back(WALL(VEC3D(0,1,0), VEC3D(0,-boxSize.y/2.0,0))); // bottom
+    
+    vector<PARTICLE>& firstGridCell = (*grid)(0,0,0);
+    
+    // add particles
+    
+    for (double y = 0; y < boxSize.y; y+= h/2.0) {
+      for (double x = -boxSize.x/4.0; x < boxSize.x/4.0; x += h/2.0) {
+        for (double z = -boxSize.z/4.0; z < boxSize.z/4.0; z+= h/2.0) {
+          firstGridCell.push_back(PARTICLE(VEC3D(x,y,z)));
+        }
       }
     }
-    offset = !offset;
+    
+    cout << "Loaded cube scenario" << endl;
+    cout << "Grid size is " << (*grid).xRes() << "x" << (*grid).yRes() << "x" << (*grid).zRes() << endl;
+    cout << "Simulating " << PARTICLE::count << " particles" << endl;
+  }
+  else if (scenario == SCENARIO_FAUCET) {
+    
+    // create cubed grid
+    
+    boxSize.x = BOX_SIZE;
+    boxSize.y = BOX_SIZE;
+    boxSize.z = BOX_SIZE;
+    
+    int gridXRes = (int)ceil(boxSize.x/h);
+    int gridYRes = (int)ceil(boxSize.y/h);
+    int gridZRes = (int)ceil(boxSize.z/h);
+    
+    grid = new FIELD_3D(gridXRes, gridYRes, gridZRes);
+    
+    // add walls 
+    
+    _walls.push_back(WALL(VEC3D(0,0,1), VEC3D(0,0,-boxSize.z/2.0))); // back
+    _walls.push_back(WALL(VEC3D(0,0,-1), VEC3D(0,0,boxSize.z/2.0))); // front
+    _walls.push_back(WALL(VEC3D(1,0,0), VEC3D(-boxSize.x/2.0,0,0))); // left
+    _walls.push_back(WALL(VEC3D(-1,0,0), VEC3D(boxSize.x/2.0,0,0))); // right
+    _walls.push_back(WALL(VEC3D(0,1,0), VEC3D(0,-boxSize.y/2.0,0))); // bottom
+    
+    cout << "Loaded faucet scenario" << endl;
+    cout << "Grid size is " << (*grid).xRes() << "x" << (*grid).yRes() << "x" << (*grid).zRes() << endl;
   }
   
-  */
+  
+  updateGrid();
+
   
   
-  
-  
-  //generateFaucetParticleSet();
-  
-  
-  
-  
-  
-  
-  
-  
-#ifndef BRUTE
-  updateGrid(); // to properly position all the particles initially
-#endif
-   
-  printf("simulating %d particles\n", _particleCount);
-  
-  _walls.push_back(WALL(VEC3D(0,0,1), VEC3D(0,0,-BOX_SIZE/2.0)));
-  _walls.push_back(WALL(VEC3D(1,0,0), VEC3D(-BOX_SIZE/2.0,0,0)));
-  _walls.push_back(WALL(VEC3D(-1,0,0), VEC3D(BOX_SIZE/2.0,0,0)));
-  _walls.push_back(WALL(VEC3D(0,1,0), VEC3D(0,-BOX_SIZE/2.0,0)));
-  _walls.push_back(WALL(VEC3D(0,0,-1), VEC3D(0,0,BOX_SIZE/2.0)));
-  //_walls.push_back(WALL(VEC3D(0,-1,0), VEC3D(0,BOX_SIZE/2.0,0)));  // top wall
 }
 
 void PARTICLE_SYSTEM::generateFaucetParticleSet() {
   
-  VEC3D initialVelocity(-1.4,-0.05,0);
+  VEC3D initialVelocity(-1.8,-1.8,0);
   
-  addParticle(VEC3D(BOX_SIZE/2.0-h,-BOX_SIZE/4.0+h*4, 0), initialVelocity);
-  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3, 0), initialVelocity);
-  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2, 0), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0,BOX_SIZE+h*0.6, 0), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0, BOX_SIZE, 0), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0, BOX_SIZE+h*-0.6, 0), initialVelocity);
   
-  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2.5, h+0.0001), initialVelocity);
-  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*2.5, -h+0.0001), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0, BOX_SIZE+h*0.3, h*0.6), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0, BOX_SIZE+h*0.3, h*-0.6), initialVelocity);
   
-  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3.5, h), initialVelocity);
-  addParticle(VEC3D(BOX_SIZE/2.0-h, -BOX_SIZE/4.0+h*3.5, -h), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0, BOX_SIZE+h*-0.3, h*0.6), initialVelocity);
+  addParticle(VEC3D(BOX_SIZE/2.0-h/2.0, BOX_SIZE+h*-0.3, h*-0.6), initialVelocity);
 
 
 }
@@ -119,7 +172,7 @@ void PARTICLE_SYSTEM::addParticle(const VEC3D& position, const VEC3D& velocity) 
   (*grid)(0,0,0).push_back(PARTICLE(position, velocity));
 #endif
   
-  _particleCount++;
+  //_particleCount++;
 }
 
 void PARTICLE_SYSTEM::addParticle(const VEC3D& position) {
@@ -140,6 +193,10 @@ void PARTICLE_SYSTEM::toggleSurfaceVisible() {
   PARTICLE::isSurfaceVisible = !PARTICLE::isSurfaceVisible;
 }
 
+void PARTICLE_SYSTEM::toggleTumble() {
+  _tumble = !_tumble;
+}
+
 void PARTICLE_SYSTEM::toggleGravity() {
   if (gravityVector.magnitude() > 0.0) {
     gravityVector = VEC3D(0,0,0);
@@ -149,10 +206,20 @@ void PARTICLE_SYSTEM::toggleGravity() {
   }
 }
 
+void PARTICLE_SYSTEM::toggleArrows() {
+  PARTICLE::showArrows = !PARTICLE::showArrows;
+}
+
+void PARTICLE_SYSTEM::setGravityVectorWithViewVector(VEC3D viewVector) {
+  
+  if (_tumble)
+    gravityVector = viewVector * GRAVITY_ACCELERATION;
+  
+}
+
 // to update the grid cells particles are located in
 // should be called right after particle positions are updated
 void PARTICLE_SYSTEM::updateGrid() {
-  //cout << "updateGrid()" << endl;
     
   for (unsigned int x = 0; x < (*grid).xRes(); x++) {
     for (unsigned int y = 0; y < (*grid).yRes(); y++) {
@@ -261,14 +328,14 @@ void PARTICLE_SYSTEM::draw()
     
     glColor3fv(lightGreyColor);
     
-    double offset = -BOX_SIZE/2.0+h/2.0;
+    //double offset = -BOX_SIZE/2.0+h/2.0;
     
     for (int x = 0; x < grid->xRes(); x++) {
       for (int y = 0; y < grid->yRes(); y++) {
         for (int z = 0; z < grid->zRes(); z++) {
           glPushMatrix();
           
-          glTranslated(x*h+offset, y*h+offset, z*h+offset);
+          glTranslated(x*h-boxSize.x/2.0+h/2.0, y*h-boxSize.y/2.0+h/2.0, z*h-boxSize.z/2.0+h/2.0);
           glutWireCube(h);
           
           glPopMatrix();
@@ -283,36 +350,10 @@ void PARTICLE_SYSTEM::draw()
 
   glColor3fv(greyColor);
   
-  glutWireCube(BOX_SIZE);
-  
-//  glPushMatrix();
-//  glTranslatef(BOX_SIZE/2.0, 0, 0);
-//  glutWireSphere(0.01, 10, 10);
-//  glPopMatrix();
-  
-  /*
-  
-  // draw the springs
-  glLineWidth(5.0);
-  glBegin(GL_LINES);
-  for (unsigned int x = 0; x < _springs.size(); x++)
-  {
-    int left = _springs[x].leftIndex();
-    int right = _springs[x].rightIndex();
-    VEC3F& p0 = _particles[left].position();
-    VEC3F& p1 = _particles[right].position();
-    glVertex3fv(p0);
-    glVertex3fv(p1);
-  }
-  glEnd();
-
-  // draw the walls
-  glMaterialfv(GL_FRONT, GL_SPECULAR, green);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, green);
-  for (unsigned int x = 0; x < _walls.size(); x++)
-    _walls[x].draw();
-   */
-   
+  glPopMatrix();
+  glScaled(boxSize.x, boxSize.y, boxSize.z);
+  glutWireCube(1.0);
+  glPopMatrix();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -320,10 +361,6 @@ void PARTICLE_SYSTEM::draw()
 ///////////////////////////////////////////////////////////////////////////////
 void PARTICLE_SYSTEM::stepVerlet(double dt)
 {
-  
-  
-  
-  
   
   calculateAcceleration();
   
@@ -343,8 +380,8 @@ void PARTICLE_SYSTEM::stepVerlet(double dt)
     }
   }
   
-  if (_particleCount < MAX_PARTICLES && iteration % 16 == 0) {
-    //===generateFaucetParticleSet();
+  if (scenario == SCENARIO_FAUCET && PARTICLE::count < MAX_PARTICLES) {
+    generateFaucetParticleSet();
   }
   
   updateGrid();
@@ -357,13 +394,13 @@ void PARTICLE_SYSTEM::stepVerlet(double dt)
 ///////////////////////////////////////////////////////////////////////////////
 void PARTICLE_SYSTEM::stepVerletBrute(double dt)
 {
-  if (_particleCount < MAX_PARTICLES && iteration % 12 == 0) {
+  if (PARTICLE::count < MAX_PARTICLES && iteration % 12 == 0) {
     generateFaucetParticleSet();
   }
   
   calculateAccelerationBrute();
   
-  for (unsigned int i = 0; i < _particleCount; i++) {
+  for (unsigned int i = 0; i < PARTICLE::count; i++) {
     
     PARTICLE& particle = _particles[i];
     
@@ -378,11 +415,11 @@ void PARTICLE_SYSTEM::stepVerletBrute(double dt)
   
 }
 
-
-//double totalDensity = 0.0;
-//VEC3D totalPressure;
-//int neighborsVisited = 0;
-
+/*
+ Calculate the acceleration of each particle using a grid optimized approach.
+ For each particle, only particles in the same grid cell and the (26) neighboring grid cells must be considered,
+ since any particle beyond a grid cell distance away contributes no force.
+*/
 void PARTICLE_SYSTEM::calculateAcceleration() {
   
   ///////////////////
@@ -543,29 +580,20 @@ void PARTICLE_SYSTEM::calculateAcceleration() {
             particle.flag() = false;
           }
           
-          
-          
           // ADD IN SPH FORCES
           
           particle.acceleration() = (f_pressure + f_viscosity + f_surface + f_gravity) / particle.density();
-          
-          //cout << particle.acceleration() << endl;
           
           // EXTERNAL FORCES HERE (USER INTERACTION, SWIRL)
           
           VEC3D f_collision; 
           collisionForce(particle, f_collision);
           
-          
-          
-          //particle.acceleration() += (f_collision) / PARTICLE_MASS;
-        } // end of particle iteration
+        } 
       }
     }
   }
   
-  //cout << "neighbors visited: " << neighborsVisited << endl;
-  //cout << "total pressure: " << totalPressure << endl;
 }
 
 
@@ -578,13 +606,12 @@ void PARTICLE_SYSTEM::collisionForce(PARTICLE& particle, VEC3D& f_collision) {
     double d = (wall.point() - particle.position()).dot(wall.normal()) + 0.01; // particle radius
     
     if (d > 0.0) {
-      particle.position() += d * wall.normal();
-      particle.velocity() -= particle.velocity().dot(wall.normal()) * 1.9 * wall.normal();
+      // This is an alernate way of calculating collisions of particles against walls, but produces some jitter at boundaries
+      //particle.position() += d * wall.normal();
+      //particle.velocity() -= particle.velocity().dot(wall.normal()) * 1.9 * wall.normal();
       
-      
-      
-      //f_collision += WALL_K * wall.normal() * d;
-      //f_collision += WALL_DAMPING * particle.velocity().dot(wall.normal()) * wall.normal();
+      particle.acceleration() += WALL_K * wall.normal() * d;
+      particle.acceleration() += WALL_DAMPING * particle.velocity().dot(wall.normal()) * wall.normal();
     }
   }
 }
@@ -633,48 +660,16 @@ double PARTICLE_SYSTEM::WviscosityLaplacian(double radiusSquared) {
   return coefficient * (h - radius);    
 }
 
-
-//std::cout << grid.size() << "\n";
-//gridKey key = std::tr1::make_tuple(2,3,4);
-//vector<PARTICLE> *hi = &grid[key];
-//if (gridKey.find("
-
-/* cal f_surface here
- 
- if (n_mag > N_SURFACE_THRESHOLD) {  
- 
- VEC3D colorFieldLaplacian; // laplacian of colorfield
- 
- for (int j = 0; j < numNeighborParticles; j++) {
- 
- PARTICLE& neighbor = neighbors[j];
- 
- VEC3D diffPosition = particle.position() - neighbor.position();
- 
- colorFieldLaplacian += PARTICLE_MASS / neighbor.density() * Wpoly6Laplacian(diffPosition) * diffPosition.normal();
- 
- }
- 
- particle.flag() = true;
- 
- f_surface = -SURFACE_TENSION * colorFieldLaplacian * (n / n_mag);
- 
- }
- else {
- particle.flag() = false;
- }
- */
-
+/*
+ Calculate the acceleration of every particle in a brute force manner (n^2).
+ Used for debugging.
+*/
 void PARTICLE_SYSTEM::calculateAccelerationBrute() {
-      
-  // to conaint a vector of neighbors belonging to each particle (same index as _particles)
-//  vector<PARTICLE> **neighborArray = new vector<PARTICLE>*[numParticles]; // make this vector instead?
-  
-  
+        
   ///////////////////
   // STEP 1: UPDATE DENSITY & PRESSURE OF EACH PARTICLE
   
-  for (int i = 0; i < _particleCount; i++) {
+  for (int i = 0; i < PARTICLE::count; i++) {
     
     // grab ith particle reference
     
@@ -684,7 +679,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     particle.density() = 0.0;
             
-    for (int j = 0; j < _particleCount; j++) {
+    for (int j = 0; j < PARTICLE::count; j++) {
       
       PARTICLE& neighborParticle = _particles[j];
       
@@ -704,16 +699,11 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
   
     //totalDensity += particle.density();
   }
-  
-  
-  //cout << "total density (BRUTE): " << totalDensity << endl;
-
-  
-  
+    
   ///////////////////
   // STEP 2: COMPUTE FORCES FOR ALL PARTICLES
   
-  for (int i = 0; i < _particleCount; i++) {
+  for (int i = 0; i < PARTICLE::count; i++) {
     
     PARTICLE& particle = _particles[i];
     
@@ -728,7 +718,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     colorFieldLaplacian; // n is gradient of colorfield
     //double n_mag;
     
-    for (int j = 0; j < _particleCount; j++) {
+    for (int j = 0; j < PARTICLE::count; j++) {
       PARTICLE& neighbor = _particles[j];
       
       VEC3D diffPosition = particle.position() - neighbor.position();
@@ -773,32 +763,6 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     
     colorFieldLaplacian *= PARTICLE_MASS;
     
-    /* cal f_surface here
-     
-     if (n_mag > N_SURFACE_THRESHOLD) {  
-     
-     VEC3D colorFieldLaplacian; // laplacian of colorfield
-     
-     for (int j = 0; j < numNeighborParticles; j++) {
-     
-     PARTICLE& neighbor = neighbors[j];
-     
-     VEC3D diffPosition = particle.position() - neighbor.position();
-     
-     colorFieldLaplacian += PARTICLE_MASS / neighbor.density() * Wpoly6Laplacian(diffPosition) * diffPosition.normal();
-     
-     }
-     
-     particle.flag() = true;
-     
-     f_surface = -SURFACE_TENSION * colorFieldLaplacian * (n / n_mag);
-     
-     }
-     else {
-     particle.flag() = false;
-     }
-     */
-    
     // surface tension force
     
     double colorFieldNormalMagnitude = colorFieldNormal.magnitude();
@@ -823,14 +787,7 @@ void PARTICLE_SYSTEM::calculateAccelerationBrute() {
     VEC3D f_collision;
     
     collisionForce(particle, f_collision);    
-  
-    
-    //particle.acceleration() += (f_collision) / PARTICLE_MASS;
+
   }
-  
-  //cout << "neighbors visited: " << neighborsVisited << endl;
-  //cout << "total pressure: " << totalPressure << endl;
-  
-  //delete[] neighborArray;
 }
 

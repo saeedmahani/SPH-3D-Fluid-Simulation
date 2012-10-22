@@ -23,12 +23,14 @@
 
 #define GRAVITY_ACCELERATION -9.80665
 
-// not used anymore
-#define WALL_K 500.0 // wall spring constant
+
+#define WALL_K 10000.0 // wall spring constant
 #define WALL_DAMPING -0.9 // wall damping constant
 
-#define BOX_SIZE 0.6
-#define MAX_PARTICLES 1500
+#define BOX_SIZE 0.4
+#define MAX_PARTICLES 3000
+
+#define INITIAL_SCENARIO SCENARIO_DAM
 
 using namespace std;
 
@@ -75,7 +77,20 @@ public:
   
   void toggleGravity();
   
+  void toggleArrows();
+  
+  void toggleTumble();
+  
   void generateFaucetParticleSet();
+  
+  void setGravityVectorWithViewVector(VEC3D viewVector);
+  
+  
+  void loadScenario(int scenario);
+  
+  
+  
+  
   
   //typedef std::tr1::tuple<int,int,int> gridKey;  
   //std::map<gridKey, std::vector<PARTICLE> > grid;
@@ -90,8 +105,11 @@ private:
   vector<PARTICLE> _particles;
   vector<WALL>     _walls;
 
-  unsigned int _particleCount;
+  //unsigned int _particleCount;
   bool _isGridVisible;
+  bool _tumble;
+  
+  VEC3D boxSize;
 
 };
 

@@ -946,26 +946,26 @@ void GLVU::Keyboard(unsigned char Key, int x, int y)
     case 'c': MainMenuHandler(3); break;
     case 'v': MainMenuHandler(4); break;
 
-    case '=': vuOptionsMenuHandler(1); break;
-    case 'o': vuOptionsMenuHandler(2); break;
+    //case '=': vuOptionsMenuHandler(1); break;
+    //case 'o': vuOptionsMenuHandler(2); break;
     case 'r': vuOptionsMenuHandler(3); break;
-    case 'i': vuOptionsMenuHandler(4); break;
+    //case 'i': vuOptionsMenuHandler(4); break;
 
-    case 'w': glOptionsMenuHandler(2); break;
-    case 'b': glOptionsMenuHandler(3); break;
-    case 'l': glOptionsMenuHandler(8); break;
-    case 'n': glOptionsMenuHandler(9); break;
-    case 'm': glOptionsMenuHandler(10); break;
+    //case 'w': glOptionsMenuHandler(2); break;
+    //case 'b': glOptionsMenuHandler(3); break;
+    //case 'l': glOptionsMenuHandler(8); break;
+    //case 'n': glOptionsMenuHandler(9); break;
+    //case 'm': glOptionsMenuHandler(10); break;
 
-    case '1': CamViewMenuHandler(0); break;
-    case '2': CamViewMenuHandler(1); break;
-    case '3': CamViewMenuHandler(2); break;
-    case '4': CamViewMenuHandler(3); break;
+    //case '1': CamViewMenuHandler(0); break;
+    //case '2': CamViewMenuHandler(1); break;
+    //case '3': CamViewMenuHandler(2); break;
+    //case '4': CamViewMenuHandler(3); break;
 
-    case '!': CamViewDisplayMenuHandler(0); break;
-    case '@': CamViewDisplayMenuHandler(1); break;
-    case '#': CamViewDisplayMenuHandler(2); break;
-    case '$': CamViewDisplayMenuHandler(3); break;
+    //case '!': CamViewDisplayMenuHandler(0); break;
+    //case '@': CamViewDisplayMenuHandler(1); break;
+    //case '#': CamViewDisplayMenuHandler(2); break;
+    //case '$': CamViewDisplayMenuHandler(3); break;
   };
 }
 

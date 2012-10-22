@@ -25,12 +25,14 @@ class PARTICLE {
 public:
   
   static bool isSurfaceVisible;
+  static bool showArrows;
   
   //static unsigned int count;
   PARTICLE();
   PARTICLE(const VEC3D& position);
   PARTICLE(const VEC3D& position, const VEC3D& velocity);
-
+  //~PARTICLE();
+  
   // draw to OGL
   void draw();
 
@@ -53,6 +55,10 @@ public:
   int& id() { return _id; };
   VEC3D normal;
   
+  void clearParameters();
+  
+  static unsigned int count;
+  
 private:  
   VEC3D _position;
   VEC3D _velocity;
@@ -62,7 +68,7 @@ private:
   double _pressure;
   bool _flag;
   int _id;
-  
+  GLUquadricObj* myQuadric;
     
 };
 
