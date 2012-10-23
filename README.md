@@ -1,7 +1,7 @@
 # SPH Fluid Simulation #
 
 
-For our final project in Theodore Kim's Physics-Based Simulation class we were asked to implement a large, non-trivial technique. My project is based on Matthias Müller's (et al.) research of applying Smoothed Particle Hydrodynamics (SPH) to fluid simulation - essentially simulating fluid as thousands of small particles, rather than the traditional Eularian grid-based approach.
+For our final project in Theodore Kim's Physics-Based Simulation class (Winter '12) we were asked to implement a large, non-trivial technique. My project is based on Matthias Müller's (et al.) research of applying Smoothed Particle Hydrodynamics (SPH) to fluid simulation - essentially simulating fluid as thousands of small particles, rather than the traditional Eularian grid-based approach.
 
 Feel free to email me and I'll tell you more about this project!
 
