@@ -1,4 +1,4 @@
-# SPH Fluid Simulation #
+# SPH 3D Real-Time Fluid Simulation #
 
 ![Fluid Image](http://www.saeedmahani.com/images/fluid1.png)
 
